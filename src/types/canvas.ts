@@ -9,7 +9,7 @@ export type CanvasPreset = {
   description: string;
 };
 
-export type ActiveTab = 'templates' | 'elements' | 'text' | 'uploads' | 'draw' | 'backgrounds' | 'layers';
+export type ActiveTab = 'templates' | 'elements' | 'icons' | 'text' | 'uploads' | 'draw' | 'backgrounds' | 'brandkit' | 'qrcode' | 'codecard' | 'accessibility' | 'layers';
 
 export type FontOption = {
   name: string;
@@ -30,6 +30,15 @@ export type CanvasPage = {
 
 export type SelectedObjectType = 'text' | 'i-text' | 'rect' | 'circle' | 'triangle' | 'image' | 'path' | 'group' | 'activeSelection' | 'none';
 
+export type ImageFilterSettings = {
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  blur: number;
+  grayscale: boolean;
+  sepia: boolean;
+};
+
 export type ObjectProperties = {
   type: SelectedObjectType;
   fill: string;
@@ -43,6 +52,11 @@ export type ObjectProperties = {
   textAlign: string;
   underline: boolean;
   linethrough: boolean;
+  charSpacing: number;
+  lineHeight: number;
+  textBackgroundColor: string;
+  shadowColor: string;
+  shadowBlur: number;
   angle: number;
   width: number;
   height: number;
@@ -51,6 +65,13 @@ export type ObjectProperties = {
   isLocked: boolean;
   rx?: number;
   ry?: number;
+  filters?: ImageFilterSettings;
+};
+
+export type BrandPalette = {
+  id: string;
+  name: string;
+  colors: string[];
 };
 
 export type PrebuiltTemplate = {

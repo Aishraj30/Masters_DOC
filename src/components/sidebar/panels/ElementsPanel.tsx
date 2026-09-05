@@ -7,8 +7,16 @@ import {
   Star as StarIcon, 
   Minus, 
   ArrowRight,
-  Shapes,
+  ArrowLeft,
+  ArrowUp,
+  ArrowDown,
+  ArrowLeftRight,
+  MessageSquare,
+  Database,
   Hexagon,
+  Diamond as DiamondIcon,
+  Heart as HeartIcon,
+  Shapes,
   Shield,
   Award,
   Zap
@@ -18,7 +26,13 @@ import {
   addCircle, 
   addTriangle, 
   addStar, 
-  addLine 
+  addHexagon,
+  addDiamond,
+  addHeart,
+  addLine,
+  addArrow,
+  addSpeechBubble,
+  addFlowchartDatabase
 } from '../../../utils/fabricHelpers';
 
 interface ElementsPanelProps {
@@ -33,7 +47,24 @@ export const ElementsPanel: React.FC<ElementsPanelProps> = ({ canvas }) => {
     { name: 'Circle', icon: CircleIcon, action: () => addCircle(canvas, '#00c4cc') },
     { name: 'Triangle', icon: TriangleIcon, action: () => addTriangle(canvas, '#f59e0b') },
     { name: 'Star', icon: StarIcon, action: () => addStar(canvas, '#ec4899') },
-    { name: 'Line', icon: Minus, action: () => addLine(canvas, '#ffffff') },
+    { name: 'Hexagon', icon: Hexagon, action: () => addHexagon(canvas, '#3b82f6') },
+    { name: 'Diamond', icon: DiamondIcon, action: () => addDiamond(canvas, '#10b981') },
+    { name: 'Heart', icon: HeartIcon, action: () => addHeart(canvas, '#ef4444') },
+  ];
+
+  const arrowShapes = [
+    { name: 'Arrow Right', icon: ArrowRight, action: () => addArrow(canvas, 'right', '#00c4cc') },
+    { name: 'Arrow Left', icon: ArrowLeft, action: () => addArrow(canvas, 'left', '#00c4cc') },
+    { name: 'Arrow Up', icon: ArrowUp, action: () => addArrow(canvas, 'up', '#00c4cc') },
+    { name: 'Arrow Down', icon: ArrowDown, action: () => addArrow(canvas, 'down', '#00c4cc') },
+    { name: 'Double Arrow', icon: ArrowLeftRight, action: () => addArrow(canvas, 'double', '#7d2ae8') },
+  ];
+
+  const diagramShapes = [
+    { name: 'Callout Bubble', icon: MessageSquare, action: () => addSpeechBubble(canvas, '#3b82f6') },
+    { name: 'Database Node', icon: Database, action: () => addFlowchartDatabase(canvas, '#8b3dff') },
+    { name: 'Solid Line', icon: Minus, action: () => addLine(canvas, '#ffffff', false) },
+    { name: 'Dashed Line', icon: Minus, action: () => addLine(canvas, '#38bdf8', true) },
   ];
 
   const colorPalettes = [
@@ -54,15 +85,15 @@ export const ElementsPanel: React.FC<ElementsPanelProps> = ({ canvas }) => {
       <div className="p-4 border-b border-canva-border">
         <div className="flex items-center space-x-2">
           <Shapes className="w-4 h-4 text-canva-teal" />
-          <h2 className="font-bold text-sm text-white">Elements & Shapes</h2>
+          <h2 className="font-bold text-sm text-white">Shapes, Arrows & Diagrams</h2>
         </div>
         <p className="text-xs text-gray-400 mt-1">
-          Add geometric vectors, shapes, and decorative lines to your design.
+          Vector shapes, directional arrows, flowcharts, & diagram elements for PPTs & docs.
         </p>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Basic Shapes Grid */}
+        {/* Basic Geometric Shapes Grid */}
         <div>
           <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
             Basic Shapes
@@ -76,8 +107,52 @@ export const ElementsPanel: React.FC<ElementsPanelProps> = ({ canvas }) => {
                   onClick={shape.action}
                   className="flex flex-col items-center justify-center p-3 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all hover:scale-105 group"
                 >
-                  <Icon className="w-7 h-7 text-canva-teal mb-1 group-hover:text-white transition-colors" />
-                  <span className="text-[11px] text-gray-300 font-medium">{shape.name}</span>
+                  <Icon className="w-6 h-6 text-canva-teal mb-1 group-hover:text-white transition-colors" />
+                  <span className="text-[11px] text-gray-300 font-medium truncate w-full text-center">{shape.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Arrows & Directional Pointers */}
+        <div>
+          <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+            Arrows & Directional Pointers
+          </h3>
+          <div className="grid grid-cols-3 gap-2.5">
+            {arrowShapes.map((shape) => {
+              const Icon = shape.icon;
+              return (
+                <button
+                  key={shape.name}
+                  onClick={shape.action}
+                  className="flex flex-col items-center justify-center p-3 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all hover:scale-105 group"
+                >
+                  <Icon className="w-6 h-6 text-amber-400 mb-1 group-hover:text-white transition-colors" />
+                  <span className="text-[11px] text-gray-300 font-medium truncate w-full text-center">{shape.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Flowchart & Diagram Connectors */}
+        <div>
+          <h3 className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-3">
+            Diagrams & Connectors
+          </h3>
+          <div className="grid grid-cols-2 gap-2.5">
+            {diagramShapes.map((shape) => {
+              const Icon = shape.icon;
+              return (
+                <button
+                  key={shape.name}
+                  onClick={shape.action}
+                  className="flex flex-col items-center justify-center p-3 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all hover:scale-105 group"
+                >
+                  <Icon className="w-6 h-6 text-sky-400 mb-1 group-hover:text-white transition-colors" />
+                  <span className="text-[11px] text-gray-300 font-medium truncate w-full text-center">{shape.name}</span>
                 </button>
               );
             })}

@@ -10,10 +10,15 @@ import { SidebarNav } from './components/sidebar/SidebarNav';
 
 import { TemplatesPanel } from './components/sidebar/panels/TemplatesPanel';
 import { ElementsPanel } from './components/sidebar/panels/ElementsPanel';
+import { IconsPanel } from './components/sidebar/panels/IconsPanel';
 import { TextPanel } from './components/sidebar/panels/TextPanel';
 import { UploadsPanel } from './components/sidebar/panels/UploadsPanel';
 import { DrawPanel } from './components/sidebar/panels/DrawPanel';
 import { BackgroundsPanel } from './components/sidebar/panels/BackgroundsPanel';
+import { BrandKitPanel } from './components/sidebar/panels/BrandKitPanel';
+import { QRCodePanel } from './components/sidebar/panels/QRCodePanel';
+import { CodeCardPanel } from './components/sidebar/panels/CodeCardPanel';
+import { AccessibilityPanel } from './components/sidebar/panels/AccessibilityPanel';
 import { LayersPanel } from './components/sidebar/panels/LayersPanel';
 
 import { CanvasEditor } from './components/canvas/CanvasEditor';
@@ -23,12 +28,18 @@ import { ExportModal } from './components/modals/ExportModal';
 import { ResizeModal } from './components/modals/ResizeModal';
 import { PresentModal } from './components/modals/PresentModal';
 import { NewPageRatioModal } from './components/modals/NewPageRatioModal';
+import { LoginPage } from './components/auth/LoginPage';
 import { exportCanvas } from './utils/export';
+import { toggleWatermark } from './utils/watermark';
+import { isAuthenticated, logoutUser } from './utils/auth';
 
 export function App() {
+  // Authentication State
+  const [isAuth, setIsAuth] = useState<boolean>(isAuthenticated());
+
   // Document State
   const [designTitle, setDesignTitle] = useState<string>('Untitled Design');
-  const [activePreset, setActivePreset] = useState<CanvasPreset>(CANVAS_PRESETS[0]); // Instagram Post 1:1
+  const [activePreset, setActivePreset] = useState<CanvasPreset>(CANVAS_PRESETS[0]);
   const [backgroundColor, setBackgroundColor] = useState<string>('#0f172a');
   const [zoom, setZoom] = useState<number>(100);
 
@@ -65,8 +76,18 @@ export function App() {
   const [isPresentOpen, setIsPresentOpen] = useState(false);
   const [isAddPageRatioOpen, setIsAddPageRatioOpen] = useState(false);
 
+  const handleLogout = () => {
+    logoutUser();
+    setIsAuth(false);
+  };
+
+  // If user is not authenticated, render Login Page screen
+  if (!isAuth) {
+    return <LoginPage onLoginSuccess={() => setIsAuth(true)} />;
+  }
+
   // Save current canvas state to history stack
-  const saveState = useCallback(() => {
+  const saveState = () => {
     if (!canvas || isUndoRedoAction.current) return;
 
     const json = JSON.stringify(canvas.toJSON(['id', 'name', 'isLocked', 'rx', 'ry']));
@@ -80,7 +101,7 @@ export function App() {
 
     setCanUndo(historyIndex.current > 0);
     setCanRedo(historyIndex.current < historyStack.current.length - 1);
-  }, [canvas]);
+  };
 
   // Handle Canvas Ready Initialization
   const handleCanvasReady = (fabricCanvas: fabric.Canvas) => {
@@ -139,7 +160,6 @@ export function App() {
     setActivePreset(preset);
     setBackgroundColor(template.backgroundColor);
 
-    // Update current page record
     setPages((prevPages) =>
       prevPages.map((p) =>
         p.id === currentPageId
@@ -162,7 +182,6 @@ export function App() {
     const targetPage = pages.find((p) => p.id === pageId);
     if (!targetPage || !canvas) return;
 
-    // Save current page state
     const currentState = JSON.stringify(canvas.toJSON());
     setPages((prevPages) =>
       prevPages.map((p) => (p.id === currentPageId ? { ...p, jsonState: currentState } : p))
@@ -192,11 +211,10 @@ export function App() {
     }
   };
 
-  // Page Management: Insert Page with Chosen Ratio
+  // Insert Page with Chosen Ratio
   const handleConfirmAddPage = (chosenPreset: CanvasPreset) => {
     if (!canvas) return;
 
-    // Save active page state before adding new page
     const currentState = JSON.stringify(canvas.toJSON());
     setPages((prevPages) =>
       prevPages.map((p) => (p.id === currentPageId ? { ...p, jsonState: currentState } : p))
@@ -248,7 +266,6 @@ export function App() {
     setCurrentPageId(filtered[0].id);
   };
 
-  // Save / Load JSON Project
   const handleSaveJson = () => {
     if (!canvas) return;
     exportCanvas(canvas, 'json', designTitle);
@@ -283,6 +300,12 @@ export function App() {
     }
   };
 
+  const handleToggleWatermarkAction = () => {
+    if (canvas) {
+      toggleWatermark(canvas, 'DOCMASTER DRAFT');
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-canva-bg text-gray-100 select-none">
       {/* Top Header Navbar */}
@@ -297,9 +320,11 @@ export function App() {
         canRedo={canRedo}
         onOpenExportModal={() => setIsExportOpen(true)}
         onOpenPresentModal={() => setIsPresentOpen(true)}
+        onToggleWatermark={handleToggleWatermarkAction}
         onSaveJson={handleSaveJson}
         onLoadJson={handleLoadJson}
         onNewDesign={handleNewDesign}
+        onLogout={handleLogout}
       />
 
       {/* Contextual Object Toolbar */}
@@ -315,13 +340,25 @@ export function App() {
           <TemplatesPanel canvas={canvas} onApplyTemplate={handleApplyTemplate} />
         )}
         {activeTab === 'elements' && <ElementsPanel canvas={canvas} />}
+        {activeTab === 'icons' && <IconsPanel canvas={canvas} />}
         {activeTab === 'text' && <TextPanel canvas={canvas} />}
+        {activeTab === 'qrcode' && <QRCodePanel canvas={canvas} />}
+        {activeTab === 'codecard' && <CodeCardPanel canvas={canvas} />}
+        {activeTab === 'accessibility' && (
+          <AccessibilityPanel canvas={canvas} backgroundColor={backgroundColor} />
+        )}
         {activeTab === 'uploads' && <UploadsPanel canvas={canvas} />}
         {activeTab === 'draw' && <DrawPanel canvas={canvas} />}
         {activeTab === 'backgrounds' && (
           <BackgroundsPanel
             canvas={canvas}
             backgroundColor={backgroundColor}
+            onSetBackgroundColor={setBackgroundColor}
+          />
+        )}
+        {activeTab === 'brandkit' && (
+          <BrandKitPanel
+            canvas={canvas}
             onSetBackgroundColor={setBackgroundColor}
           />
         )}

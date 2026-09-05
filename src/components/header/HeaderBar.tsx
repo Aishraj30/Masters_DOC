@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
-  Sparkles, 
   RotateCcw, 
   RotateCw, 
   Download, 
@@ -9,9 +8,14 @@ import {
   FolderOpen, 
   Save, 
   FilePlus,
-  Palette
+  Palette,
+  ShieldAlert,
+  LogOut,
+  UserCheck,
+  Clock
 } from 'lucide-react';
 import { CanvasPreset } from '../../types/canvas';
+import { getRemainingTimeSeconds } from '../../utils/auth';
 
 interface HeaderBarProps {
   title: string;
@@ -24,9 +28,11 @@ interface HeaderBarProps {
   canRedo: boolean;
   onOpenExportModal: () => void;
   onOpenPresentModal: () => void;
+  onToggleWatermark: () => void;
   onSaveJson: () => void;
   onLoadJson: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onNewDesign: () => void;
+  onLogout: () => void;
 }
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
@@ -40,11 +46,32 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   canRedo,
   onOpenExportModal,
   onOpenPresentModal,
+  onToggleWatermark,
   onSaveJson,
   onLoadJson,
   onNewDesign,
+  onLogout,
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState<number>(getRemainingTimeSeconds());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const remaining = getRemainingTimeSeconds();
+      setSecondsLeft(remaining);
+      if (remaining <= 0) {
+        onLogout();
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [onLogout]);
+
+  const formatTime = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${mins}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   return (
     <header className="h-14 bg-canva-sidebar border-b border-canva-border px-4 flex items-center justify-between z-30 select-none">
@@ -153,8 +180,26 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         </button>
       </div>
 
-      {/* Right Section: Present & Export Buttons */}
+      {/* Right Section: User Session, Watermark, Present & Export */}
       <div className="flex items-center space-x-2">
+        {/* User Session Badge & Timer */}
+        <div className="hidden lg:flex items-center space-x-2 bg-canva-panel px-2.5 py-1 rounded-md border border-canva-border text-xs text-gray-300">
+          <UserCheck className="w-3.5 h-3.5 text-canva-teal" />
+          <span className="font-semibold text-white">Aish30</span>
+          <span className="text-gray-500 font-mono">|</span>
+          <Clock className="w-3 h-3 text-amber-400" />
+          <span className="font-mono text-[11px] text-amber-300">{formatTime(secondsLeft)}</span>
+        </div>
+
+        <button
+          onClick={onToggleWatermark}
+          className="flex items-center space-x-1.5 bg-canva-panel hover:bg-canva-hover text-amber-300 px-2.5 py-1.5 rounded-md text-xs font-medium border border-amber-500/30 transition-colors"
+          title="Toggle Draft Watermark Security Overlay"
+        >
+          <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+          <span className="hidden sm:inline">Watermark</span>
+        </button>
+
         <button
           onClick={onOpenPresentModal}
           className="flex items-center space-x-1.5 bg-canva-panel hover:bg-canva-hover text-gray-200 px-3 py-1.5 rounded-md text-xs font-medium border border-canva-border transition-colors"
@@ -169,7 +214,15 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           className="flex items-center space-x-2 bg-gradient-to-r from-canva-purple to-canva-purple-hover hover:opacity-90 text-white px-4 py-1.5 rounded-md text-xs font-bold shadow-md shadow-canva-purple/20 transition-all transform hover:scale-[1.02]"
         >
           <Download className="w-4 h-4" />
-          <span>Export Design</span>
+          <span>Export</span>
+        </button>
+
+        <button
+          onClick={onLogout}
+          className="p-1.5 rounded-md hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
+          title="Sign Out (Aish30)"
+        >
+          <LogOut className="w-4 h-4" />
         </button>
       </div>
     </header>

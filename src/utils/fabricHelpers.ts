@@ -96,7 +96,6 @@ export const addTriangle = (canvas: fabric.Canvas, color: string = '#f59e0b') =>
 export const addStar = (canvas: fabric.Canvas, color: string = '#ec4899') => {
   if (!canvas) return;
   const center = canvas.getCenter();
-  // 5-point star polygon points
   const points = [
     { x: 75, y: 0 },
     { x: 95, y: 55 },
@@ -119,15 +118,152 @@ export const addStar = (canvas: fabric.Canvas, color: string = '#ec4899') => {
   canvas.requestRenderAll();
 };
 
-export const addLine = (canvas: fabric.Canvas, strokeColor: string = '#ffffff') => {
+export const addHexagon = (canvas: fabric.Canvas, color: string = '#3b82f6') => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const points = [
+    { x: 50, y: 0 },
+    { x: 150, y: 0 },
+    { x: 200, y: 86 },
+    { x: 150, y: 173 },
+    { x: 50, y: 173 },
+    { x: 0, y: 86 },
+  ];
+  const hex = new fabric.Polygon(points, {
+    left: center.left - 100,
+    top: center.top - 86,
+    fill: color,
+  });
+  canvas.add(hex);
+  canvas.setActiveObject(hex);
+  canvas.requestRenderAll();
+};
+
+export const addDiamond = (canvas: fabric.Canvas, color: string = '#10b981') => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const points = [
+    { x: 75, y: 0 },
+    { x: 150, y: 75 },
+    { x: 75, y: 150 },
+    { x: 0, y: 75 },
+  ];
+  const diamond = new fabric.Polygon(points, {
+    left: center.left - 75,
+    top: center.top - 75,
+    fill: color,
+  });
+  canvas.add(diamond);
+  canvas.setActiveObject(diamond);
+  canvas.requestRenderAll();
+};
+
+export const addHeart = (canvas: fabric.Canvas, color: string = '#ef4444') => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const heartPath = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
+  const path = new fabric.Path(heartPath, {
+    left: center.left - 60,
+    top: center.top - 60,
+    fill: color,
+  });
+  path.scaleToWidth(120);
+  canvas.add(path);
+  canvas.setActiveObject(path);
+  canvas.requestRenderAll();
+};
+
+export const addLine = (canvas: fabric.Canvas, strokeColor: string = '#ffffff', isDashed: boolean = false) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const line = new fabric.Line([center.left - 100, center.top, center.left + 100, center.top], {
     stroke: strokeColor,
     strokeWidth: 6,
+    strokeDashArray: isDashed ? [12, 8] : undefined,
   });
   canvas.add(line);
   canvas.setActiveObject(line);
+  canvas.requestRenderAll();
+};
+
+export const addArrow = (
+  canvas: fabric.Canvas,
+  type: 'right' | 'left' | 'up' | 'down' | 'double',
+  color: string = '#00c4cc'
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+
+  let pathData = '';
+  switch (type) {
+    case 'right':
+      pathData = 'M 0 20 L 120 20 L 120 0 L 160 30 L 120 60 L 120 40 L 0 40 Z';
+      break;
+    case 'left':
+      pathData = 'M 160 20 L 40 20 L 40 0 L 0 30 L 40 60 L 40 40 L 160 40 Z';
+      break;
+    case 'up':
+      pathData = 'M 20 160 L 20 40 L 0 40 L 30 0 L 60 40 L 40 40 L 40 160 Z';
+      break;
+    case 'down':
+      pathData = 'M 20 0 L 20 120 L 0 120 L 30 160 L 60 120 L 40 120 L 40 0 Z';
+      break;
+    case 'double':
+      pathData = 'M 40 20 L 120 20 L 120 0 L 160 30 L 120 60 L 120 40 L 40 40 L 40 60 L 0 30 L 40 0 Z';
+      break;
+  }
+
+  const arrow = new fabric.Path(pathData, {
+    left: center.left - 80,
+    top: center.top - 30,
+    fill: color,
+  });
+  canvas.add(arrow);
+  canvas.setActiveObject(arrow);
+  canvas.requestRenderAll();
+};
+
+export const addSpeechBubble = (canvas: fabric.Canvas, color: string = '#3b82f6') => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const bubblePath = 'M 20 0 L 180 0 C 190 0 200 10 200 20 L 200 120 C 200 130 190 140 180 140 L 80 140 L 40 180 L 40 140 L 20 140 C 10 140 0 130 0 120 L 0 20 C 0 10 10 0 20 0 Z';
+  const bubble = new fabric.Path(bubblePath, {
+    left: center.left - 100,
+    top: center.top - 70,
+    fill: color,
+  });
+  canvas.add(bubble);
+  canvas.setActiveObject(bubble);
+  canvas.requestRenderAll();
+};
+
+export const addFlowchartDatabase = (canvas: fabric.Canvas, color: string = '#8b3dff') => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const dbPath = 'M 0 30 C 0 10 120 10 120 30 L 120 130 C 120 150 0 150 0 130 Z';
+  const db = new fabric.Path(dbPath, {
+    left: center.left - 60,
+    top: center.top - 70,
+    fill: color,
+    stroke: '#ffffff',
+    strokeWidth: 2,
+  });
+  canvas.add(db);
+  canvas.setActiveObject(db);
+  canvas.requestRenderAll();
+};
+
+export const addSvgIconPath = (canvas: fabric.Canvas, pathData: string, color: string = '#00c4cc') => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const path = new fabric.Path(pathData, {
+    left: center.left - 40,
+    top: center.top - 40,
+    fill: color,
+  });
+  path.scaleToWidth(80);
+  canvas.add(path);
+  canvas.setActiveObject(path);
   canvas.requestRenderAll();
 };
 
@@ -157,6 +293,57 @@ export const addImageFromFile = (canvas: fabric.Canvas, file: File) => {
     }
   };
   reader.readAsDataURL(file);
+};
+
+export const groupSelectedObjects = (canvas: fabric.Canvas) => {
+  const activeObj = canvas.getActiveObject();
+  if (!activeObj || activeObj.type !== 'activeSelection') return;
+
+  const selection = activeObj as fabric.ActiveSelection;
+  selection.toGroup();
+  canvas.requestRenderAll();
+};
+
+export const ungroupSelectedObject = (canvas: fabric.Canvas) => {
+  const activeObj = canvas.getActiveObject();
+  if (!activeObj || activeObj.type !== 'group') return;
+
+  const group = activeObj as fabric.Group;
+  group.toActiveSelection();
+  canvas.requestRenderAll();
+};
+
+export const distributeObjects = (canvas: fabric.Canvas, direction: 'horizontal' | 'vertical') => {
+  const activeObj = canvas.getActiveObject();
+  if (!activeObj || activeObj.type !== 'activeSelection') return;
+
+  const selection = activeObj as fabric.ActiveSelection;
+  const objects = selection.getObjects();
+  if (objects.length < 3) return;
+
+  if (direction === 'horizontal') {
+    objects.sort((a, b) => (a.left || 0) - (b.left || 0));
+    const first = objects[0].left || 0;
+    const last = objects[objects.length - 1].left || 0;
+    const totalDistance = last - first;
+    const step = totalDistance / (objects.length - 1);
+
+    objects.forEach((obj, idx) => {
+      obj.set('left', first + idx * step);
+    });
+  } else {
+    objects.sort((a, b) => (a.top || 0) - (b.top || 0));
+    const first = objects[0].top || 0;
+    const last = objects[objects.length - 1].top || 0;
+    const totalDistance = last - first;
+    const step = totalDistance / (objects.length - 1);
+
+    objects.forEach((obj, idx) => {
+      obj.set('top', first + idx * step);
+    });
+  }
+  selection.setCoords();
+  canvas.requestRenderAll();
 };
 
 export const alignObject = (canvas: fabric.Canvas, alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => {
@@ -202,7 +389,6 @@ export const duplicateActiveObject = (canvas: fabric.Canvas) => {
       evented: true,
     });
     if (cloned.type === 'activeSelection') {
-      // active selection needs canvas ref
       cloned.canvas = canvas;
       (cloned as fabric.Group).forEachObject((obj) => {
         canvas.add(obj);

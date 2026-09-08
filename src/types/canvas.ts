@@ -14,7 +14,7 @@ export type ActiveTab = 'templates' | 'elements' | 'icons' | 'text' | 'uploads' 
 export type FontOption = {
   name: string;
   family: string;
-  category: 'sans-serif' | 'serif' | 'display' | 'handwriting';
+  category: 'sans-serif' | 'serif' | 'display' | 'handwriting' | 'monospace';
 };
 
 export type CanvasPage = {

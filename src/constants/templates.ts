@@ -1,6 +1,8 @@
 import { PrebuiltTemplate } from '../types/canvas';
+import { SCIENTIFIC_TEMPLATES } from './scientificTemplates';
 
 export const PREBUILT_TEMPLATES: PrebuiltTemplate[] = [
+  ...SCIENTIFIC_TEMPLATES,
   {
     id: 'tech-innovate',
     title: 'Cyber Tech Event',

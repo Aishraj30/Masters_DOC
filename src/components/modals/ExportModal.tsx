@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { fabric } from 'fabric';
-import { X, Download, FileImage, FileCode, FileText, CheckCircle2 } from 'lucide-react';
+import { X, Download, FileImage, FileCode, FileText, CheckCircle2, Presentation } from 'lucide-react';
 import { exportCanvas, ExportFormat } from '../../utils/export';
 
 interface ExportModalProps {
@@ -38,25 +38,32 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       badge: 'Best for Web',
     },
     {
-      id: 'jpeg' as ExportFormat,
-      name: 'JPG Image',
-      desc: 'Small file size ideal for social media sharing.',
-      icon: FileImage,
-      badge: 'Small Size',
-    },
-    {
       id: 'svg' as ExportFormat,
       name: 'SVG Vector',
-      desc: 'Scalable vector graphic for printing and illustrations.',
+      desc: 'Scalable vector graphic for IEEE/ACM LaTeX papers.',
       icon: FileCode,
-      badge: 'Vector',
+      badge: 'LaTeX / Vector',
     },
     {
       id: 'pdf' as ExportFormat,
       name: 'PDF Document',
-      desc: 'High resolution print-ready document.',
+      desc: 'High resolution print-ready paper figure.',
       icon: FileText,
-      badge: 'Print Ready',
+      badge: 'Paper Submission',
+    },
+    {
+      id: 'pptx' as ExportFormat,
+      name: 'PowerPoint (.pptx)',
+      desc: 'Editable slide presentation for scientific talks.',
+      icon: Presentation,
+      badge: 'Presentation',
+    },
+    {
+      id: 'jpeg' as ExportFormat,
+      name: 'JPG Image',
+      desc: 'Small file size ideal for quick preview sharing.',
+      icon: FileImage,
+      badge: 'Small Size',
     },
     {
       id: 'json' as ExportFormat,
@@ -126,8 +133,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           </div>
 
-          {/* Scale Resolution Multiplier (PNG / JPG / PDF) */}
-          {(format === 'png' || format === 'jpeg' || format === 'pdf') && (
+          {/* Scale Resolution Multiplier (PNG / JPG / PDF / PPTX) */}
+          {(format === 'png' || format === 'jpeg' || format === 'pdf' || format === 'pptx') && (
             <div className="pt-2 border-t border-canva-border">
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-semibold text-gray-300 uppercase tracking-wider">

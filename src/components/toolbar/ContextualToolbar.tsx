@@ -183,15 +183,40 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
     <div className="h-10 bg-canva-panel border-b border-canva-border px-4 flex items-center justify-between text-xs select-none z-20 overflow-x-auto scrollbar-none">
       {/* Left Group: Dynamic Object Properties */}
       <div className="flex items-center space-x-3">
-        {/* Fill Color */}
+        {/* Fill Color & Hollow Toggle */}
         <div className="flex items-center space-x-1.5" title="Fill Color">
-          <label className="text-[11px] text-gray-400 font-medium">Color</label>
+          <label className="text-[11px] text-gray-400 font-medium">Fill</label>
           <input
             type="color"
             value={typeof selectedObject.fill === 'string' && selectedObject.fill.startsWith('#') ? selectedObject.fill : '#8b3dff'}
             onChange={(e) => handleColorChange(e.target.value)}
-            className="w-6 h-6 rounded cursor-pointer border border-canva-border bg-transparent p-0"
+            disabled={selectedObject.fill === 'transparent' || selectedObject.fill === 'none'}
+            className="w-6 h-6 rounded cursor-pointer border border-canva-border bg-transparent p-0 disabled:opacity-30"
           />
+          <button
+            onClick={() => {
+              if (!activeObj) return;
+              const isHollow = activeObj.fill === 'transparent' || activeObj.fill === 'none' || activeObj.fill === '';
+              if (isHollow) {
+                activeObj.set({ fill: '#8b3dff' });
+              } else {
+                activeObj.set({ 
+                  fill: 'transparent',
+                  stroke: activeObj.stroke || '#00c4cc',
+                  strokeWidth: activeObj.strokeWidth || 3
+                });
+              }
+              canvas.requestRenderAll();
+            }}
+            className={`px-2 py-0.5 text-[10px] font-semibold rounded border transition-colors ${
+              selectedObject.fill === 'transparent' || selectedObject.fill === 'none' || selectedObject.fill === ''
+                ? 'bg-canva-teal text-black border-canva-teal font-bold'
+                : 'bg-canva-sidebar text-gray-300 border-canva-border hover:bg-canva-hover'
+            }`}
+            title="Toggle Hollow (Transparent Fill) vs Solid Fill"
+          >
+            {selectedObject.fill === 'transparent' || selectedObject.fill === 'none' || selectedObject.fill === '' ? 'Hollow' : 'Filled'}
+          </button>
         </div>
 
         <div className="h-4 w-px bg-canva-border" />
@@ -201,8 +226,12 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
           <>
             <select
               value={selectedObject.fontFamily}
-              onChange={(e) => handleFontFamilyChange(e.target.value)}
-              className="bg-canva-sidebar border border-canva-border text-gray-200 px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-canva-purple max-w-[130px]"
+              onChange={(e) => {
+                loadGoogleFont(e.target.value);
+                handleFontFamilyChange(e.target.value);
+              }}
+              className="bg-canva-sidebar border border-canva-border text-gray-200 px-2 py-1 rounded text-xs focus:outline-none focus:ring-1 focus:ring-canva-purple max-w-[140px]"
+              title="Font Family"
             >
               {GOOGLE_FONTS.map((f) => (
                 <option key={f.family} value={f.family} style={{ fontFamily: f.family }}>
@@ -211,24 +240,44 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
               ))}
             </select>
 
+            {/* Font Size Preset Dropdown + Direct Input + Steppers */}
             <div className="flex items-center space-x-1 bg-canva-sidebar border border-canva-border rounded px-1 py-0.5">
               <button
                 onClick={() => handleFontSizeChange(selectedObject.fontSize - 2)}
                 className="p-1 hover:bg-canva-hover rounded text-gray-300"
+                title="Decrease Font Size"
               >
                 <Minus className="w-3 h-3" />
               </button>
-              <span className="w-8 text-center font-mono font-medium text-gray-200">
-                {selectedObject.fontSize}
-              </span>
+              <input
+                type="number"
+                value={selectedObject.fontSize}
+                onChange={(e) => handleFontSizeChange(Number(e.target.value))}
+                className="w-10 text-center font-mono font-medium text-gray-200 bg-transparent focus:outline-none focus:bg-canva-hover rounded text-xs"
+                title="Font Size (px)"
+              />
+              <select
+                value={selectedObject.fontSize}
+                onChange={(e) => handleFontSizeChange(Number(e.target.value))}
+                className="bg-transparent text-gray-400 text-xs focus:outline-none cursor-pointer w-4"
+                title="Quick Font Size Presets"
+              >
+                {[8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 42, 48, 56, 64, 72, 80, 96, 120, 144].map((sz) => (
+                  <option key={sz} value={sz} className="bg-canva-panel text-white">
+                    {sz}px
+                  </option>
+                ))}
+              </select>
               <button
                 onClick={() => handleFontSizeChange(selectedObject.fontSize + 2)}
                 className="p-1 hover:bg-canva-hover rounded text-gray-300"
+                title="Increase Font Size"
               >
                 <Plus className="w-3 h-3" />
               </button>
             </div>
 
+            {/* Formatting Actions (Bold, Italic, Underline, Strikethrough, Case) */}
             <div className="flex items-center space-x-0.5 border-l border-r border-canva-border px-2">
               <button
                 onClick={handleToggleBold}
@@ -265,6 +314,74 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
               >
                 <Underline className="w-3.5 h-3.5" />
               </button>
+
+              <button
+                onClick={() => {
+                  if (!activeObj || activeObj.type !== 'i-text') return;
+                  const current = (activeObj as fabric.IText).linethrough;
+                  (activeObj as fabric.IText).set('linethrough', !current);
+                  canvas.requestRenderAll();
+                }}
+                className={`p-1.5 rounded transition-colors ${
+                  selectedObject.linethrough
+                    ? 'bg-canva-purple text-white'
+                    : 'hover:bg-canva-hover text-gray-300'
+                }`}
+                title="Strikethrough"
+              >
+                <span className="font-bold line-through text-xs px-0.5">S</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  if (!activeObj || activeObj.type !== 'i-text') return;
+                  const textObj = activeObj as fabric.IText;
+                  const curText = textObj.text || '';
+                  if (curText === curText.toUpperCase()) {
+                    textObj.set('text', curText.toLowerCase());
+                  } else {
+                    textObj.set('text', curText.toUpperCase());
+                  }
+                  canvas.requestRenderAll();
+                }}
+                className="p-1.5 rounded hover:bg-canva-hover text-gray-300 transition-colors"
+                title="Toggle UPPERCASE / lowercase"
+              >
+                <span className="font-bold text-xs px-0.5">aA</span>
+              </button>
+            </div>
+
+            {/* Alignment Options */}
+            <div className="flex items-center space-x-0.5 border-r border-canva-border pr-2">
+              <button
+                onClick={() => handleTextAlign('left')}
+                className={`p-1.5 rounded transition-colors ${
+                  selectedObject.textAlign === 'left' ? 'bg-canva-purple text-white' : 'hover:bg-canva-hover text-gray-300'
+                }`}
+                title="Align Left"
+              >
+                <AlignLeft className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                onClick={() => handleTextAlign('center')}
+                className={`p-1.5 rounded transition-colors ${
+                  selectedObject.textAlign === 'center' ? 'bg-canva-purple text-white' : 'hover:bg-canva-hover text-gray-300'
+                }`}
+                title="Align Center"
+              >
+                <AlignCenter className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                onClick={() => handleTextAlign('right')}
+                className={`p-1.5 rounded transition-colors ${
+                  selectedObject.textAlign === 'right' ? 'bg-canva-purple text-white' : 'hover:bg-canva-hover text-gray-300'
+                }`}
+                title="Align Right"
+              >
+                <AlignRight className="w-3.5 h-3.5" />
+              </button>
             </div>
 
             {/* Rich Text Spacing & Pill Background Menu */}
@@ -272,7 +389,7 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
               <button
                 onClick={() => setShowTextEffectsMenu(!showTextEffectsMenu)}
                 className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-canva-hover text-gray-300 transition-colors border border-canva-border"
-                title="Text Spacing & Background Pill"
+                title="Text Spacing, Line Height & Pill Highlight"
               >
                 <Sliders className="w-3.5 h-3.5 text-canva-teal" />
                 <span>Text Spacing</span>
@@ -281,24 +398,32 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
               {showTextEffectsMenu && (
                 <div className="absolute left-0 top-8 bg-canva-panel border border-canva-border rounded-xl shadow-xl p-3.5 w-64 z-50 text-gray-200 space-y-3">
                   <div>
-                    <label className="text-[11px] text-gray-400 block mb-1">Letter Spacing (Tracking)</label>
+                    <div className="flex justify-between text-[11px] text-gray-400 mb-1">
+                      <span>Letter Spacing (Tracking)</span>
+                      <span className="font-mono text-canva-teal">{selectedObject.charSpacing || 0}</span>
+                    </div>
                     <input
                       type="range"
                       min="0"
                       max="500"
                       step="10"
+                      value={selectedObject.charSpacing || 0}
                       onChange={(e) => handleCharSpacingChange(Number(e.target.value))}
                       className="w-full h-1 bg-canva-sidebar rounded appearance-none accent-canva-teal cursor-pointer"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[11px] text-gray-400 block mb-1">Line Height (Leading)</label>
+                    <div className="flex justify-between text-[11px] text-gray-400 mb-1">
+                      <span>Line Height (Leading)</span>
+                      <span className="font-mono text-canva-teal">{(selectedObject.lineHeight || 1.16).toFixed(2)}</span>
+                    </div>
                     <input
                       type="range"
                       min="0.8"
                       max="3.0"
-                      step="0.1"
+                      step="0.05"
+                      value={selectedObject.lineHeight || 1.16}
                       onChange={(e) => handleLineHeightChange(Number(e.target.value))}
                       className="w-full h-1 bg-canva-sidebar rounded appearance-none accent-canva-teal cursor-pointer"
                     />
@@ -306,12 +431,23 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
 
                   <div className="flex items-center justify-between pt-2 border-t border-canva-border">
                     <span className="text-[11px] text-gray-400">Background Pill</span>
-                    <input
-                      type="color"
-                      onChange={(e) => handleTextBackgroundChange(e.target.value)}
-                      className="w-6 h-6 rounded cursor-pointer border border-canva-border bg-transparent p-0"
-                      title="Set Text Background Pill Highlight"
-                    />
+                    <div className="flex items-center space-x-1.5">
+                      {selectedObject.textBackgroundColor && (
+                        <button
+                          onClick={() => handleTextBackgroundChange('')}
+                          className="text-[10px] text-red-400 hover:underline"
+                        >
+                          Clear
+                        </button>
+                      )}
+                      <input
+                        type="color"
+                        value={selectedObject.textBackgroundColor || '#8b3dff'}
+                        onChange={(e) => handleTextBackgroundChange(e.target.value)}
+                        className="w-5 h-5 rounded cursor-pointer border border-canva-border bg-transparent p-0"
+                        title="Set Text Background Pill Highlight"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -399,23 +535,72 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
           </div>
         )}
 
-        {/* Stroke / Border */}
+        {/* Stroke / Border Controls */}
         <div className="flex items-center space-x-2">
           <label className="text-[11px] text-gray-400 font-medium">Border</label>
           <input
             type="color"
-            value={selectedObject.stroke || '#000000'}
+            value={selectedObject.stroke && selectedObject.stroke !== 'none' ? selectedObject.stroke : '#00c4cc'}
             onChange={(e) => handleStrokeColorChange(e.target.value)}
             className="w-5 h-5 rounded cursor-pointer border border-canva-border bg-transparent p-0"
+            title="Border Color"
           />
-          <input
-            type="range"
-            min="0"
-            max="20"
-            value={selectedObject.strokeWidth || 0}
-            onChange={(e) => handleStrokeWidthChange(Number(e.target.value))}
-            className="w-16 h-1 bg-canva-border rounded appearance-none cursor-pointer accent-canva-purple"
-          />
+          <div className="flex items-center space-x-1">
+            <input
+              type="range"
+              min="0"
+              max="25"
+              value={selectedObject.strokeWidth || 0}
+              onChange={(e) => handleStrokeWidthChange(Number(e.target.value))}
+              className="w-16 h-1 bg-canva-border rounded appearance-none cursor-pointer accent-canva-teal"
+              title="Border Width"
+            />
+            <span className="text-[10px] font-mono text-canva-teal w-6 text-right">
+              {selectedObject.strokeWidth || 0}px
+            </span>
+          </div>
+
+          {/* Border Dash Style Dropdown */}
+          <select
+            onChange={(e) => {
+              if (!activeObj) return;
+              const val = e.target.value;
+              let dash: number[] | undefined = undefined;
+              if (val === 'dashed') dash = [8, 8];
+              if (val === 'dotted') dash = [3, 3];
+              activeObj.set('strokeDashArray', dash);
+              canvas.requestRenderAll();
+            }}
+            className="bg-canva-sidebar border border-canva-border text-gray-300 text-[11px] rounded px-1 py-0.5 focus:outline-none cursor-pointer"
+            title="Border Line Style"
+          >
+            <option value="solid" className="bg-canva-panel text-white">Solid Line</option>
+            <option value="dashed" className="bg-canva-panel text-white">Dashed Line</option>
+            <option value="dotted" className="bg-canva-panel text-white">Dotted Line</option>
+          </select>
+
+          {/* Corner Radius for Rectangles */}
+          {selectedObject.type === 'rect' && (
+            <div className="flex items-center space-x-1.5 border-l border-canva-border pl-2" title="Corner Rounding (Radius)">
+              <label className="text-[11px] text-gray-400 font-medium">Radius</label>
+              <input
+                type="range"
+                min="0"
+                max="50"
+                value={selectedObject.rx || 0}
+                onChange={(e) => {
+                  if (!activeObj || activeObj.type !== 'rect') return;
+                  const rad = Number(e.target.value);
+                  (activeObj as fabric.Rect).set({ rx: rad, ry: rad });
+                  canvas.requestRenderAll();
+                }}
+                className="w-14 h-1 bg-canva-border rounded appearance-none cursor-pointer accent-canva-teal"
+              />
+              <span className="text-[10px] font-mono text-canva-teal">
+                {selectedObject.rx || 0}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Opacity */}

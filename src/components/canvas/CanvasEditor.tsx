@@ -1,7 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { fabric } from 'fabric';
 import { ObjectProperties } from '../../types/canvas';
-import { deleteActiveObject, duplicateActiveObject } from '../../utils/fabricHelpers';
+import { 
+  deleteActiveObject, 
+  duplicateActiveObject, 
+  groupSelectedObjects, 
+  ungroupSelectedObject, 
+  addSvgIconPath,
+  getFixedArrowheadPathData 
+} from '../../utils/fabricHelpers';
 
 interface CanvasEditorProps {
   width: number;
@@ -87,8 +94,51 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
     canvas.on('selection:cleared', () => onSelectionChange(null));
     canvas.on('object:modified', updateSelection);
 
+    // Enforce uniform stroke width & fixed-size arrowhead when stretching/scaling connector arrows
+    const handleFixedArrowScaling = (obj: fabric.Object | undefined) => {
+      if (!obj) return;
+      obj.set('strokeUniform', true);
+
+      if ((obj as any).isFixedConnectorArrow) {
+        const currentWidth = (obj.width || 160) * (obj.scaleX || 1);
+        const currentHeight = (obj.height || 40) * (obj.scaleY || 1);
+        const style = (obj as any).connectorStyle || 'curved';
+
+        const newPathData = getFixedArrowheadPathData(currentWidth, currentHeight, style);
+        const tempPath = new fabric.Path(newPathData);
+
+        (obj as fabric.Path).set({
+          path: tempPath.path,
+          width: tempPath.width,
+          height: tempPath.height,
+          pathOffset: tempPath.pathOffset,
+          scaleX: 1,
+          scaleY: 1,
+        });
+        obj.setCoords();
+      }
+    };
+
+    canvas.on('object:added', (e) => {
+      if (e.target) {
+        e.target.set('strokeUniform', true);
+      }
+    });
+
+    canvas.on('object:scaling', (e) => {
+      if (e.target) {
+        e.target.set('strokeUniform', true);
+      }
+    });
+
+    canvas.on('object:modified', (e) => {
+      updateSelection();
+      if (e.target) {
+        handleFixedArrowScaling(e.target);
+      }
+    });
+
     // Smart Snap Guides logic
-    let ctx = canvas.getSelectionContext();
     canvas.on('object:moving', (e) => {
       const obj = e.target;
       if (!obj) return;
@@ -125,9 +175,8 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
       opt.e.stopPropagation();
     });
 
-    // Global keyboard shortcuts
+    // Global keyboard shortcuts (Delete, Duplicate, Group, Ungroup)
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing inside an editable text object
       const activeObj = canvas.getActiveObject();
       if (activeObj && activeObj.type === 'i-text' && (activeObj as fabric.IText).isEditing) {
         return;
@@ -139,6 +188,13 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
         if (e.key === 'd' || e.key === 'D') {
           e.preventDefault();
           duplicateActiveObject(canvas);
+        } else if (e.key === 'g' || e.key === 'G') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            ungroupSelectedObject(canvas);
+          } else {
+            groupSelectedObjects(canvas);
+          }
         }
       }
     };
@@ -160,9 +216,44 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
     }
   }, [backgroundColor]);
 
+  // Drag & Drop handlers for inserting SVGs onto canvas
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const canvas = fabricCanvasRef.current;
+    if (!canvas || !canvasRef.current) return;
+
+    try {
+      const dataStr = e.dataTransfer.getData('application/json');
+      if (!dataStr) return;
+
+      const data = JSON.parse(dataStr);
+      if (data.type === 'icon' && data.svgPath) {
+        const rect = canvasRef.current.getBoundingClientRect();
+        const clientX = e.clientX - rect.left;
+        const clientY = e.clientY - rect.top;
+
+        // Convert client coordinates to canvas zoom/pan position
+        const zoomLevel = zoom / 100;
+        const x = clientX / zoomLevel - 40;
+        const y = clientY / zoomLevel - 40;
+
+        addSvgIconPath(canvas, data.svgPath, data.color || '#000000', { x, y }, data.strokeWidth || 2);
+      }
+    } catch (err) {
+      console.error('Failed to parse dropped icon:', err);
+    }
+  };
+
   return (
     <div
       ref={containerRef}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
       className="flex-1 h-full canvas-checkerboard overflow-auto flex items-center justify-center p-12 relative select-none"
     >
       <div 

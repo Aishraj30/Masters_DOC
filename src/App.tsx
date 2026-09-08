@@ -40,11 +40,11 @@ export function App() {
   // Document State
   const [designTitle, setDesignTitle] = useState<string>('Untitled Design');
   const [activePreset, setActivePreset] = useState<CanvasPreset>(CANVAS_PRESETS[0]);
-  const [backgroundColor, setBackgroundColor] = useState<string>('#0f172a');
+  const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
   const [zoom, setZoom] = useState<number>(100);
 
   // Left Sidebar State
-  const [activeTab, setActiveTab] = useState<ActiveTab>('templates');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('icons');
 
   // Canvas & Selected Object State
   const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
@@ -58,7 +58,7 @@ export function App() {
       width: CANVAS_PRESETS[0].width, 
       height: CANVAS_PRESETS[0].height, 
       aspectRatio: CANVAS_PRESETS[0].aspectRatio, 
-      backgroundColor: '#0f172a' 
+      backgroundColor: '#ffffff' 
     },
   ]);
   const [currentPageId, setCurrentPageId] = useState<string>('page-1');
@@ -291,10 +291,10 @@ export function App() {
     if (!canvas) return;
     if (window.confirm('Create a new blank canvas? Unsaved changes will be cleared.')) {
       canvas.clear();
-      canvas.setBackgroundColor('#0f172a', () => {
+      canvas.setBackgroundColor('#ffffff', () => {
         canvas.requestRenderAll();
       });
-      setBackgroundColor('#0f172a');
+      setBackgroundColor('#ffffff');
       setDesignTitle('Untitled Design');
       saveState();
     }

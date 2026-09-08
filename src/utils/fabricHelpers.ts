@@ -47,7 +47,23 @@ export const addBodyText = (canvas: fabric.Canvas, text: string = 'Add a little 
   canvas.requestRenderAll();
 };
 
-export const addRectangle = (canvas: fabric.Canvas, color: string = '#8b3dff') => {
+export interface ShapeOptions {
+  color?: string;
+  isHollow?: boolean;
+  strokeColor?: string;
+  strokeWidth?: number;
+  strokeDashArray?: number[];
+  rx?: number;
+  ry?: number;
+}
+
+export const addRectangle = (
+  canvas: fabric.Canvas, 
+  color: string = '#8b3dff', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#00c4cc', 
+  strokeWidth: number = 3
+) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const rect = new fabric.Rect({
@@ -55,7 +71,10 @@ export const addRectangle = (canvas: fabric.Canvas, color: string = '#8b3dff') =
     top: center.top - 75,
     width: 150,
     height: 150,
-    fill: color,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
     rx: 12,
     ry: 12,
   });
@@ -64,21 +83,36 @@ export const addRectangle = (canvas: fabric.Canvas, color: string = '#8b3dff') =
   canvas.requestRenderAll();
 };
 
-export const addCircle = (canvas: fabric.Canvas, color: string = '#00c4cc') => {
+export const addCircle = (
+  canvas: fabric.Canvas, 
+  color: string = '#00c4cc', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#00c4cc', 
+  strokeWidth: number = 3
+) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const circle = new fabric.Circle({
     left: center.left - 75,
     top: center.top - 75,
     radius: 75,
-    fill: color,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
   });
   canvas.add(circle);
   canvas.setActiveObject(circle);
   canvas.requestRenderAll();
 };
 
-export const addTriangle = (canvas: fabric.Canvas, color: string = '#f59e0b') => {
+export const addTriangle = (
+  canvas: fabric.Canvas, 
+  color: string = '#f59e0b', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#f59e0b', 
+  strokeWidth: number = 3
+) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const triangle = new fabric.Triangle({
@@ -86,14 +120,23 @@ export const addTriangle = (canvas: fabric.Canvas, color: string = '#f59e0b') =>
     top: center.top - 75,
     width: 150,
     height: 150,
-    fill: color,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
   });
   canvas.add(triangle);
   canvas.setActiveObject(triangle);
   canvas.requestRenderAll();
 };
 
-export const addStar = (canvas: fabric.Canvas, color: string = '#ec4899') => {
+export const addStar = (
+  canvas: fabric.Canvas, 
+  color: string = '#ec4899', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#ec4899', 
+  strokeWidth: number = 3
+) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const points = [
@@ -111,14 +154,23 @@ export const addStar = (canvas: fabric.Canvas, color: string = '#ec4899') => {
   const star = new fabric.Polygon(points, {
     left: center.left - 75,
     top: center.top - 75,
-    fill: color,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
   });
   canvas.add(star);
   canvas.setActiveObject(star);
   canvas.requestRenderAll();
 };
 
-export const addHexagon = (canvas: fabric.Canvas, color: string = '#3b82f6') => {
+export const addHexagon = (
+  canvas: fabric.Canvas, 
+  color: string = '#3b82f6', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#3b82f6', 
+  strokeWidth: number = 3
+) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const points = [
@@ -132,14 +184,23 @@ export const addHexagon = (canvas: fabric.Canvas, color: string = '#3b82f6') => 
   const hex = new fabric.Polygon(points, {
     left: center.left - 100,
     top: center.top - 86,
-    fill: color,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
   });
   canvas.add(hex);
   canvas.setActiveObject(hex);
   canvas.requestRenderAll();
 };
 
-export const addDiamond = (canvas: fabric.Canvas, color: string = '#10b981') => {
+export const addDiamond = (
+  canvas: fabric.Canvas, 
+  color: string = '#10b981', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#10b981', 
+  strokeWidth: number = 3
+) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const points = [
@@ -151,25 +212,283 @@ export const addDiamond = (canvas: fabric.Canvas, color: string = '#10b981') => 
   const diamond = new fabric.Polygon(points, {
     left: center.left - 75,
     top: center.top - 75,
-    fill: color,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
   });
   canvas.add(diamond);
   canvas.setActiveObject(diamond);
   canvas.requestRenderAll();
 };
 
-export const addHeart = (canvas: fabric.Canvas, color: string = '#ef4444') => {
+export const addHeart = (
+  canvas: fabric.Canvas, 
+  color: string = '#ef4444', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#ef4444', 
+  strokeWidth: number = 3
+) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const heartPath = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
   const path = new fabric.Path(heartPath, {
     left: center.left - 60,
     top: center.top - 60,
-    fill: color,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
   });
   path.scaleToWidth(120);
   canvas.add(path);
   canvas.setActiveObject(path);
+  canvas.requestRenderAll();
+};
+
+export const addPentagon = (
+  canvas: fabric.Canvas, 
+  color: string = '#8b5cf6', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#8b5cf6', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const points = [
+    { x: 75, y: 0 },
+    { x: 150, y: 55 },
+    { x: 120, y: 145 },
+    { x: 30, y: 145 },
+    { x: 0, y: 55 },
+  ];
+  const pentagon = new fabric.Polygon(points, {
+    left: center.left - 75,
+    top: center.top - 75,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  canvas.add(pentagon);
+  canvas.setActiveObject(pentagon);
+  canvas.requestRenderAll();
+};
+
+export const addOctagon = (
+  canvas: fabric.Canvas, 
+  color: string = '#0ea5e9', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#0ea5e9', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const points = [
+    { x: 45, y: 0 },
+    { x: 105, y: 0 },
+    { x: 150, y: 45 },
+    { x: 150, y: 105 },
+    { x: 105, y: 150 },
+    { x: 45, y: 150 },
+    { x: 0, y: 105 },
+    { x: 0, y: 45 },
+  ];
+  const octagon = new fabric.Polygon(points, {
+    left: center.left - 75,
+    top: center.top - 75,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  canvas.add(octagon);
+  canvas.setActiveObject(octagon);
+  canvas.requestRenderAll();
+};
+
+export const addEllipse = (
+  canvas: fabric.Canvas, 
+  color: string = '#06b6d4', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#06b6d4', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const ellipse = new fabric.Ellipse({
+    left: center.left - 90,
+    top: center.top - 50,
+    rx: 90,
+    ry: 50,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  canvas.add(ellipse);
+  canvas.setActiveObject(ellipse);
+  canvas.requestRenderAll();
+};
+
+export const addParallelogram = (
+  canvas: fabric.Canvas, 
+  color: string = '#f43f5e', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#f43f5e', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const points = [
+    { x: 40, y: 0 },
+    { x: 160, y: 0 },
+    { x: 120, y: 100 },
+    { x: 0, y: 100 },
+  ];
+  const poly = new fabric.Polygon(points, {
+    left: center.left - 80,
+    top: center.top - 50,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  canvas.add(poly);
+  canvas.setActiveObject(poly);
+  canvas.requestRenderAll();
+};
+
+export const addTrapezoid = (
+  canvas: fabric.Canvas, 
+  color: string = '#a855f7', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#a855f7', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const points = [
+    { x: 30, y: 0 },
+    { x: 130, y: 0 },
+    { x: 160, y: 100 },
+    { x: 0, y: 100 },
+  ];
+  const trap = new fabric.Polygon(points, {
+    left: center.left - 80,
+    top: center.top - 50,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  canvas.add(trap);
+  canvas.setActiveObject(trap);
+  canvas.requestRenderAll();
+};
+
+export const addCross = (
+  canvas: fabric.Canvas, 
+  color: string = '#14b8a6', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#14b8a6', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const points = [
+    { x: 45, y: 0 }, { x: 95, y: 0 }, { x: 95, y: 45 },
+    { x: 140, y: 45 }, { x: 140, y: 95 }, { x: 95, y: 95 },
+    { x: 95, y: 140 }, { x: 45, y: 140 }, { x: 45, y: 95 },
+    { x: 0, y: 95 }, { x: 0, y: 45 }, { x: 45, y: 45 },
+  ];
+  const cross = new fabric.Polygon(points, {
+    left: center.left - 70,
+    top: center.top - 70,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  canvas.add(cross);
+  canvas.setActiveObject(cross);
+  canvas.requestRenderAll();
+};
+
+export const addRightTriangle = (
+  canvas: fabric.Canvas, 
+  color: string = '#eab308', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#eab308', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const points = [
+    { x: 0, y: 0 },
+    { x: 0, y: 140 },
+    { x: 140, y: 140 },
+  ];
+  const tri = new fabric.Polygon(points, {
+    left: center.left - 70,
+    top: center.top - 70,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  canvas.add(tri);
+  canvas.setActiveObject(tri);
+  canvas.requestRenderAll();
+};
+
+export const addCloudShape = (
+  canvas: fabric.Canvas, 
+  color: string = '#38bdf8', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#38bdf8', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const cloudPath = 'M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z';
+  const path = new fabric.Path(cloudPath, {
+    left: center.left - 75,
+    top: center.top - 50,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  path.scaleToWidth(150);
+  canvas.add(path);
+  canvas.setActiveObject(path);
+  canvas.requestRenderAll();
+};
+
+export const addPillShape = (
+  canvas: fabric.Canvas, 
+  color: string = '#6366f1', 
+  isHollow: boolean = false, 
+  strokeColor: string = '#6366f1', 
+  strokeWidth: number = 3
+) => {
+  if (!canvas) return;
+  const center = canvas.getCenter();
+  const pill = new fabric.Rect({
+    left: center.left - 90,
+    top: center.top - 35,
+    width: 180,
+    height: 70,
+    rx: 35,
+    ry: 35,
+    fill: isHollow ? 'transparent' : color,
+    stroke: strokeColor,
+    strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
+    strokeUniform: true,
+  });
+  canvas.add(pill);
+  canvas.setActiveObject(pill);
   canvas.requestRenderAll();
 };
 
@@ -186,41 +505,137 @@ export const addLine = (canvas: fabric.Canvas, strokeColor: string = '#ffffff', 
   canvas.requestRenderAll();
 };
 
-export const addArrow = (
+export type ArrowStyleType = 'straight' | 'curved' | 'elbow' | 'scurve' | 'dashed-curved' | 'double-curved';
+
+export const getFixedArrowheadPathData = (
+  w: number,
+  h: number,
+  style: ArrowStyleType
+): string => {
+  const width = Math.max(30, w);
+  const height = Math.max(16, h);
+  const L = 14; // Fixed 14px arrowhead length
+  const W = 6.5; // Fixed 6.5px wing spread
+
+  if (style === 'curved' || style === 'dashed-curved' || style === 'double-curved') {
+    // Arc curve: Q (width/2) 0 (width) height
+    // Calculate right endpoint tangent vector (dx, dy)
+    const dx = width / 2;
+    const dy = height;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len;
+    const uy = dy / len;
+    const nx = -uy;
+    const ny = ux;
+
+    // Right arrowhead wings
+    const rx1 = width - L * ux + W * nx;
+    const ry1 = height - L * uy + W * ny;
+    const rx2 = width - L * ux - W * nx;
+    const ry2 = height - L * uy - W * ny;
+
+    let path = `M 0 ${height} Q ${width / 2} 0 ${width} ${height} M ${rx1.toFixed(1)} ${ry1.toFixed(1)} L ${width} ${height} L ${rx2.toFixed(1)} ${ry2.toFixed(1)}`;
+
+    if (style === 'double-curved') {
+      // Left endpoint tangent vector (pointing outwards back from start): dx = -width/2, dy = height
+      const ldx = -width / 2;
+      const ldy = height;
+      const llen = Math.hypot(ldx, ldy) || 1;
+      const lux = ldx / llen;
+      const luy = ldy / llen;
+      const lnx = -luy;
+      const lny = lux;
+
+      const lx1 = 0 - L * lux + W * lnx;
+      const ly1 = height - L * luy + W * lny;
+      const lx2 = 0 - L * lux - W * lnx;
+      const ly2 = height - L * luy - W * lny;
+
+      path = `M ${lx1.toFixed(1)} ${ly1.toFixed(1)} L 0 ${height} L ${lx2.toFixed(1)} ${ly2.toFixed(1)} ` + path;
+    }
+
+    return path;
+  }
+
+  if (style === 'elbow') {
+    // L-shaped orthogonal 90-degree bend with fixed 14px arrowhead
+    return `M 0 0 L 0 ${height} L ${width} ${height} M ${width - L} ${height - W} L ${width} ${height} L ${width - L} ${height + W}`;
+  }
+
+  if (style === 'scurve') {
+    // S-curve cubic bezier with fixed 14px arrowhead
+    return `M 0 0 C ${width * 0.45} 0 ${width * 0.55} ${height} ${width} ${height} M ${width - L} ${height - W} L ${width} ${height} L ${width - L} ${height + W}`;
+  }
+
+  // Default straight line with fixed 14px arrowhead
+  return `M 0 10 L ${width} 10 M ${width - L} ${10 - W} L ${width} 10 L ${width - L} ${10 + W}`;
+};
+
+export const addBentConnectorArrow = (
   canvas: fabric.Canvas,
-  type: 'right' | 'left' | 'up' | 'down' | 'double',
-  color: string = '#00c4cc'
+  style: ArrowStyleType = 'curved',
+  color: string = '#000000'
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
 
-  let pathData = '';
-  switch (type) {
-    case 'right':
-      pathData = 'M 0 20 L 120 20 L 120 0 L 160 30 L 120 60 L 120 40 L 0 40 Z';
-      break;
-    case 'left':
-      pathData = 'M 160 20 L 40 20 L 40 0 L 0 30 L 40 60 L 40 40 L 160 40 Z';
-      break;
-    case 'up':
-      pathData = 'M 20 160 L 20 40 L 0 40 L 30 0 L 60 40 L 40 40 L 40 160 Z';
-      break;
-    case 'down':
-      pathData = 'M 20 0 L 20 120 L 0 120 L 30 160 L 60 120 L 40 120 L 40 0 Z';
-      break;
-    case 'double':
-      pathData = 'M 40 20 L 120 20 L 120 0 L 160 30 L 120 60 L 120 40 L 40 40 L 40 60 L 0 30 L 40 0 Z';
-      break;
-  }
+  const initialWidth = 160;
+  const initialHeight = style === 'straight' ? 20 : 60;
+  const pathString = getFixedArrowheadPathData(initialWidth, initialHeight, style);
+  const isDashed = style === 'dashed-curved';
 
-  const arrow = new fabric.Path(pathData, {
-    left: center.left - 80,
-    top: center.top - 30,
-    fill: color,
+  const arrow = new fabric.Path(pathString, {
+    left: center.left - initialWidth / 2,
+    top: center.top - initialHeight / 2,
+    fill: '',
+    stroke: color,
+    strokeWidth: 3,
+    strokeUniform: true,
+    strokeLineCap: 'round',
+    strokeLineJoin: 'round',
+    strokeDashArray: isDashed ? [10, 6] : undefined,
   });
+
+  // Attach metadata to identify fixed-arrowhead connector
+  (arrow as any).isFixedConnectorArrow = true;
+  (arrow as any).connectorStyle = style;
+
+  // Enable stretch and height controls
+  arrow.setControlsVisibility({
+    tl: true,
+    tr: true,
+    br: true,
+    bl: true,
+    ml: true, // Stretch width handle
+    mr: true, // Stretch width handle
+    mt: true, // Bend / Curve height handle
+    mb: true, // Bend / Curve height handle
+    mtr: true, // Rotate handle
+  });
+
   canvas.add(arrow);
   canvas.setActiveObject(arrow);
   canvas.requestRenderAll();
+};
+
+export const addStretchableArrow = (
+  canvas: fabric.Canvas,
+  color: string = '#000000',
+  isDashed: boolean = false,
+  isDouble: boolean = false
+) => {
+  const style = isDouble ? 'double-curved' : (isDashed ? 'dashed-curved' : 'straight');
+  addBentConnectorArrow(canvas, style, color);
+};
+
+export const addArrow = (
+  canvas: fabric.Canvas,
+  type: 'right' | 'left' | 'up' | 'down' | 'double' | 'stretch',
+  color: string = '#000000'
+) => {
+  if (!canvas) return;
+  const style: ArrowStyleType = type === 'double' ? 'double-curved' : 'straight';
+  addBentConnectorArrow(canvas, style, color);
 };
 
 export const addSpeechBubble = (canvas: fabric.Canvas, color: string = '#3b82f6') => {
@@ -253,13 +668,27 @@ export const addFlowchartDatabase = (canvas: fabric.Canvas, color: string = '#8b
   canvas.requestRenderAll();
 };
 
-export const addSvgIconPath = (canvas: fabric.Canvas, pathData: string, color: string = '#00c4cc') => {
+export const addSvgIconPath = (
+  canvas: fabric.Canvas,
+  pathData: string,
+  color: string = '#000000',
+  position?: { x: number; y: number },
+  strokeWidth: number = 2
+) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const posX = position ? position.x : center.left - 40;
+  const posY = position ? position.y : center.top - 40;
+
   const path = new fabric.Path(pathData, {
-    left: center.left - 40,
-    top: center.top - 40,
-    fill: color,
+    left: posX,
+    top: posY,
+    fill: '',
+    stroke: color,
+    strokeWidth: strokeWidth,
+    strokeUniform: true,
+    strokeLineCap: 'round',
+    strokeLineJoin: 'round',
   });
   path.scaleToWidth(80);
   canvas.add(path);

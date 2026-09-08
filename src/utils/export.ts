@@ -1,8 +1,9 @@
 import { fabric } from 'fabric';
 import jsPDF from 'jspdf';
+import PptxGenJS from 'pptxgenjs';
 import confetti from 'canvas-confetti';
 
-export type ExportFormat = 'png' | 'jpeg' | 'svg' | 'pdf' | 'json';
+export type ExportFormat = 'png' | 'jpeg' | 'svg' | 'pdf' | 'json' | 'pptx';
 
 export const exportCanvas = async (
   canvas: fabric.Canvas,
@@ -73,6 +74,39 @@ export const exportCanvas = async (
 
       pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
       pdf.save(`${title}.pdf`);
+      fireConfetti();
+      break;
+    }
+    case 'pptx': {
+      const pptx = new PptxGenJS();
+      const width = canvas.width || 1280;
+      const height = canvas.height || 720;
+      
+      // Configure 16:9 or custom slide size in inches (72 DPI baseline)
+      pptx.defineLayout({
+        name: 'CUSTOM',
+        width: width / 96,
+        height: height / 96,
+      });
+      pptx.layout = 'CUSTOM';
+
+      const slide = pptx.addSlide();
+
+      // Export canvas as PNG data URL for high-fidelity PowerPoint slide insertion
+      const imgData = canvas.toDataURL({
+        format: 'png',
+        multiplier: 2,
+      });
+
+      slide.addImage({
+        data: imgData,
+        x: 0,
+        y: 0,
+        w: width / 96,
+        h: height / 96,
+      });
+
+      await pptx.writeFile({ fileName: `${title}.pptx` });
       fireConfetti();
       break;
     }

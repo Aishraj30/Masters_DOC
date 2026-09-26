@@ -4,7 +4,9 @@ import { connectToDatabase } from '@/lib/db';
 import User from '@/models/User';
 import { signJwtToken } from '@/lib/jwt';
 
-const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+const googleClientId =
+  process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ||
+  '652644191161-hsiomovnr42rdp0dp9ebstducfep3edv.apps.googleusercontent.com';
 const client = new OAuth2Client(googleClientId);
 
 export async function POST(request: Request) {

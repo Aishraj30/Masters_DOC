@@ -28,7 +28,7 @@ import {
   Aperture
 } from 'lucide-react';
 import { ObjectProperties, ImageFilterSettings } from '../../types/canvas';
-import { GOOGLE_FONTS } from '../../constants/fonts';
+import { GOOGLE_FONTS, loadGoogleFont } from '../../constants/fonts';
 import { applyImageFilters } from '../../utils/imageFilters';
 import { 
   alignObject, 

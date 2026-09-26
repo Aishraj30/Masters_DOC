@@ -1,6 +1,5 @@
 import React from 'react';
 import { 
-  LayoutTemplate, 
   Shapes, 
   Type, 
   UploadCloud, 
@@ -22,7 +21,6 @@ interface SidebarNavProps {
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
-    { id: 'templates' as ActiveTab, label: 'Templates', icon: LayoutTemplate },
     { id: 'elements' as ActiveTab, label: 'Elements', icon: Shapes },
     { id: 'icons' as ActiveTab, label: 'Icons', icon: Heart },
     { id: 'text' as ActiveTab, label: 'Text', icon: Type },

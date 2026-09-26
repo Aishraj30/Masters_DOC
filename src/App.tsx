@@ -1,4 +1,6 @@
-import React, { useState, useRef, useCallback } from 'react';
+'use client';
+
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { fabric } from 'fabric';
 
 import { CANVAS_PRESETS } from './constants/presets';
@@ -8,7 +10,6 @@ import { HeaderBar } from './components/header/HeaderBar';
 import { ContextualToolbar } from './components/toolbar/ContextualToolbar';
 import { SidebarNav } from './components/sidebar/SidebarNav';
 
-import { TemplatesPanel } from './components/sidebar/panels/TemplatesPanel';
 import { ElementsPanel } from './components/sidebar/panels/ElementsPanel';
 import { IconsPanel } from './components/sidebar/panels/IconsPanel';
 import { TextPanel } from './components/sidebar/panels/TextPanel';
@@ -16,28 +17,46 @@ import { UploadsPanel } from './components/sidebar/panels/UploadsPanel';
 import { DrawPanel } from './components/sidebar/panels/DrawPanel';
 import { BackgroundsPanel } from './components/sidebar/panels/BackgroundsPanel';
 import { BrandKitPanel } from './components/sidebar/panels/BrandKitPanel';
-import { QRCodePanel } from './components/sidebar/panels/QRCodePanel';
-import { CodeCardPanel } from './components/sidebar/panels/CodeCardPanel';
-import { AccessibilityPanel } from './components/sidebar/panels/AccessibilityPanel';
 import { LayersPanel } from './components/sidebar/panels/LayersPanel';
 
 import { CanvasEditor } from './components/canvas/CanvasEditor';
 import { PageManager } from './components/canvas/PageManager';
 
 import { ExportModal } from './components/modals/ExportModal';
+import { FeedbackModal } from './components/modals/FeedbackModal';
 import { ResizeModal } from './components/modals/ResizeModal';
 import { PresentModal } from './components/modals/PresentModal';
 import { NewPageRatioModal } from './components/modals/NewPageRatioModal';
 import { LoginPage } from './components/auth/LoginPage';
-import { exportCanvas } from './utils/export';
+import { LandingPage } from './components/landing/LandingPage';
+import { Dashboard } from './components/dashboard/Dashboard';
 import { toggleWatermark } from './utils/watermark';
-import { isAuthenticated, logoutUser } from './utils/auth';
+import { getCurrentUser, fetchCurrentUserApi, logoutUser, UserProfile } from './utils/auth';
+import { CanvasProject } from './types/project';
+import { getProjectById, saveProject, createNewProject, getUserProjects } from './utils/projectsStorage';
 
-export function App() {
-  // Authentication State
-  const [isAuth, setIsAuth] = useState<boolean>(isAuthenticated());
+interface AppProps {
+  initialView?: 'landing' | 'auth' | 'dashboard' | 'editor';
+}
 
-  // Document State
+export function App({ initialView }: AppProps = {}) {
+  // Authentication & View State
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(getCurrentUser());
+  const [view, setView] = useState<'landing' | 'auth' | 'dashboard' | 'editor'>(
+    initialView || (getCurrentUser() ? 'dashboard' : 'landing')
+  );
+
+  useEffect(() => {
+    fetchCurrentUserApi().then((user) => {
+      if (user) {
+        setCurrentUser(user);
+        setView((prev) => (prev === 'landing' || prev === 'auth' ? 'dashboard' : prev));
+      }
+    });
+  }, []);
+
+  // Active Project & Document State
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [designTitle, setDesignTitle] = useState<string>('Untitled Design');
   const [activePreset, setActivePreset] = useState<CanvasPreset>(CANVAS_PRESETS[0]);
   const [backgroundColor, setBackgroundColor] = useState<string>('#ffffff');
@@ -52,13 +71,13 @@ export function App() {
 
   // Multi-page System State
   const [pages, setPages] = useState<CanvasPage[]>([
-    { 
-      id: 'page-1', 
-      title: 'Page 1', 
-      width: CANVAS_PRESETS[0].width, 
-      height: CANVAS_PRESETS[0].height, 
-      aspectRatio: CANVAS_PRESETS[0].aspectRatio, 
-      backgroundColor: '#ffffff' 
+    {
+      id: 'page-1',
+      title: 'Page 1',
+      width: CANVAS_PRESETS[0].width,
+      height: CANVAS_PRESETS[0].height,
+      aspectRatio: CANVAS_PRESETS[0].aspectRatio,
+      backgroundColor: '#ffffff',
     },
   ]);
   const [currentPageId, setCurrentPageId] = useState<string>('page-1');
@@ -67,40 +86,249 @@ export function App() {
   const historyStack = useRef<string[]>([]);
   const historyIndex = useRef<number>(-1);
   const isUndoRedoAction = useRef<boolean>(false);
+  const isLoadedRef = useRef<boolean>(false);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
 
+  // Fit Zoom Handler Reference
+  const fitZoomFnRef = useRef<(() => void) | null>(null);
+
+  const handleZoomFit = useCallback(() => {
+    if (fitZoomFnRef.current) {
+      fitZoomFnRef.current();
+    } else {
+      setZoom(100);
+    }
+  }, []);
+
   // Modals
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [lastExportFormat, setLastExportFormat] = useState<string>('png');
   const [isResizeOpen, setIsResizeOpen] = useState(false);
   const [isPresentOpen, setIsPresentOpen] = useState(false);
   const [isAddPageRatioOpen, setIsAddPageRatioOpen] = useState(false);
 
-  const handleLogout = () => {
-    logoutUser();
-    setIsAuth(false);
+  // Auto-Load Active Project from URL query param (?id=...) or LocalStorage on mount
+  useEffect(() => {
+    if (!currentUser) return;
+
+    let targetProjectId: string | null = null;
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlId = params.get('id');
+      if (urlId) {
+        targetProjectId = urlId;
+      }
+    }
+
+    if (!targetProjectId && typeof localStorage !== 'undefined') {
+      targetProjectId = localStorage.getItem('docmaster_last_active_project_id');
+    }
+
+    let proj: CanvasProject | undefined;
+    if (targetProjectId) {
+      proj = getProjectById(targetProjectId);
+    }
+
+    if (!proj) {
+      const userProjects = getUserProjects(currentUser.id);
+      if (userProjects.length > 0) {
+        proj = userProjects[0];
+      } else {
+        proj = createNewProject(currentUser.id, 'My First Design', CANVAS_PRESETS[0]);
+      }
+    }
+
+    if (proj) {
+      setActiveProjectId(proj.id);
+      setDesignTitle(proj.title);
+      setPages(proj.pages);
+      setBackgroundColor(proj.backgroundColor || '#ffffff');
+
+      if (proj.pages && proj.pages.length > 0) {
+        const p0 = proj.pages[0];
+        setCurrentPageId(p0.id);
+        setActivePreset({
+          id: proj.preset?.id || 'preset-loaded',
+          name: proj.preset?.name || 'Canvas Preset',
+          width: p0.width,
+          height: p0.height,
+          aspectRatio: p0.aspectRatio || proj.preset?.aspectRatio || '1:1',
+          iconName: proj.preset?.iconName || 'layout',
+          category: proj.preset?.category || 'social',
+          description: `${p0.width}×${p0.height} px`,
+        });
+      }
+
+      isLoadedRef.current = true;
+
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('docmaster_last_active_project_id', proj.id);
+      }
+      if (typeof window !== 'undefined') {
+        const newUrl = `${window.location.pathname}?id=${proj.id}`;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, [currentUser]);
+
+  // Safe helper to load JSON onto Fabric canvas with context readiness check
+  const safeLoadCanvasJson = useCallback((targetCanvas: fabric.Canvas | null, jsonStr: string, onComplete?: () => void) => {
+    if (!targetCanvas || !jsonStr) return;
+
+    // Verify 2D Rendering Context is available on fabric canvas
+    const ctx = typeof (targetCanvas as any).getContext === 'function' ? (targetCanvas as any).getContext() : null;
+    if (!ctx) {
+      // If 2D context is not attached yet, defer load to next frame
+      requestAnimationFrame(() => {
+        safeLoadCanvasJson(targetCanvas, jsonStr, onComplete);
+      });
+      return;
+    }
+
+    try {
+      isUndoRedoAction.current = true;
+      targetCanvas.loadFromJSON(jsonStr, () => {
+        try {
+          targetCanvas.requestRenderAll();
+        } catch (e) {
+          console.error('Failed requestRenderAll:', e);
+        }
+        isUndoRedoAction.current = false;
+        if (onComplete) onComplete();
+      });
+    } catch (err) {
+      console.error('Failed loadFromJSON:', err);
+      isUndoRedoAction.current = false;
+    }
+  }, []);
+
+  // Hydrate Fabric Canvas objects whenever project or active page changes
+  useEffect(() => {
+    if (!canvas || !isLoadedRef.current) return;
+    const curPage = pages.find((p) => p.id === currentPageId) || pages[0];
+    if (curPage && curPage.jsonState) {
+      safeLoadCanvasJson(canvas, curPage.jsonState);
+    }
+  }, [canvas, activeProjectId, currentPageId, safeLoadCanvasJson]);
+
+  // Auto-Save active project state helper
+  const saveCurrentProjectToStorage = (updatedPages?: CanvasPage[]) => {
+    if (!activeProjectId || !currentUser) return;
+    const existing = getProjectById(activeProjectId);
+    if (existing) {
+      const updated: CanvasProject = {
+        ...existing,
+        title: designTitle,
+        preset: activePreset,
+        pages: updatedPages || pages,
+        backgroundColor,
+        updatedAt: Date.now(),
+      };
+      saveProject(updated);
+    }
   };
 
-  // If user is not authenticated, render Login Page screen
-  if (!isAuth) {
-    return <LoginPage onLoginSuccess={() => setIsAuth(true)} />;
-  }
+  const handleLogout = () => {
+    saveCurrentProjectToStorage();
+    logoutUser();
+    setCurrentUser(null);
+    setView('landing');
+  };
 
-  // Save current canvas state to history stack
+  const handleLoginSuccess = (user: UserProfile) => {
+    setCurrentUser(user);
+    setView('dashboard');
+  };
+
+  const handleOpenProject = (projectId: string) => {
+    if (!currentUser) {
+      setView('auth');
+      return;
+    }
+    const proj = getProjectById(projectId);
+    if (!proj) return;
+
+    setActiveProjectId(proj.id);
+    setDesignTitle(proj.title);
+    setPages(proj.pages);
+    setBackgroundColor(proj.backgroundColor || '#ffffff');
+
+    if (proj.pages && proj.pages.length > 0) {
+      const p0 = proj.pages[0];
+      setCurrentPageId(p0.id);
+      setActivePreset({
+        id: proj.preset?.id || 'preset-loaded',
+        name: proj.preset?.name || 'Canvas Preset',
+        width: p0.width,
+        height: p0.height,
+        aspectRatio: p0.aspectRatio || proj.preset?.aspectRatio || '1:1',
+        iconName: proj.preset?.iconName || 'layout',
+        category: proj.preset?.category || 'social',
+        description: `${p0.width}×${p0.height} px`,
+      });
+
+      if (canvas && p0.jsonState) {
+        safeLoadCanvasJson(canvas, p0.jsonState);
+      }
+    }
+
+    isLoadedRef.current = true;
+
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('docmaster_last_active_project_id', proj.id);
+    }
+    if (typeof window !== 'undefined') {
+      const newUrl = `${window.location.pathname}?id=${proj.id}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+
+    setView('editor');
+  };
+
+  const handleBackToDashboard = () => {
+    saveCurrentProjectToStorage();
+    setView('dashboard');
+  };
+
+  // Save current canvas state to history stack and project storage
   const saveState = () => {
-    if (!canvas || isUndoRedoAction.current) return;
+    if (!canvas || !isLoadedRef.current || isUndoRedoAction.current) return;
 
-    const json = JSON.stringify(canvas.toJSON(['id', 'name', 'isLocked', 'rx', 'ry']));
-    
+    const jsonState = JSON.stringify(canvas.toJSON(['id', 'name', 'isLocked', 'rx', 'ry', 'connectorStyle', 'isFixedConnectorArrow', 'strokeUniform']));
+
     if (historyIndex.current < historyStack.current.length - 1) {
       historyStack.current = historyStack.current.slice(0, historyIndex.current + 1);
     }
 
-    historyStack.current.push(json);
+    historyStack.current.push(jsonState);
     historyIndex.current = historyStack.current.length - 1;
 
     setCanUndo(historyIndex.current > 0);
     setCanRedo(historyIndex.current < historyStack.current.length - 1);
+
+    // Save page content into pages state
+    const currentPageObj = pages.find((p) => p.id === currentPageId) || pages[0];
+    const targetW = currentPageObj ? currentPageObj.width : activePreset.width;
+    const targetH = currentPageObj ? currentPageObj.height : activePreset.height;
+    const targetRatio = currentPageObj ? currentPageObj.aspectRatio : activePreset.aspectRatio;
+
+    const updatedPages = pages.map((p) =>
+      p.id === (currentPageId || pages[0]?.id)
+        ? {
+            ...p,
+            width: targetW,
+            height: targetH,
+            aspectRatio: targetRatio,
+            backgroundColor,
+            jsonState,
+          }
+        : p
+    );
+
+    setPages(updatedPages);
+    saveCurrentProjectToStorage(updatedPages);
   };
 
   // Handle Canvas Ready Initialization
@@ -110,8 +338,6 @@ export function App() {
     fabricCanvas.on('object:added', () => saveState());
     fabricCanvas.on('object:modified', () => saveState());
     fabricCanvas.on('object:removed', () => saveState());
-
-    saveState();
   };
 
   // Undo execution
@@ -151,168 +377,274 @@ export function App() {
       name: template.title,
       width: template.width,
       height: template.height,
-      aspectRatio: template.width === template.height ? '1:1' : '16:9',
-      iconName: 'Layout',
-      category: 'social',
-      description: `${template.title} (${template.width}×${template.height})`
-    };
-
-    setActivePreset(preset);
-    setBackgroundColor(template.backgroundColor);
-
-    setPages((prevPages) =>
-      prevPages.map((p) =>
-        p.id === currentPageId
-          ? { ...p, width: template.width, height: template.height, aspectRatio: preset.aspectRatio }
-          : p
-      )
-    );
-
-    canvas.clear();
-    canvas.setBackgroundColor(template.backgroundColor, () => {});
-
-    canvas.loadFromJSON({ objects: template.elements, background: template.backgroundColor }, () => {
-      canvas.requestRenderAll();
-      saveState();
-    });
-  };
-
-  // Switch Active Page
-  const handleSelectPage = (pageId: string) => {
-    const targetPage = pages.find((p) => p.id === pageId);
-    if (!targetPage || !canvas) return;
-
-    const currentState = JSON.stringify(canvas.toJSON());
-    setPages((prevPages) =>
-      prevPages.map((p) => (p.id === currentPageId ? { ...p, jsonState: currentState } : p))
-    );
-
-    setCurrentPageId(pageId);
-    setActivePreset({
-      id: targetPage.id,
-      name: targetPage.title,
-      width: targetPage.width,
-      height: targetPage.height,
-      aspectRatio: targetPage.aspectRatio,
-      iconName: 'Square',
+      aspectRatio: `${template.width}:${template.height}`,
+      iconName: 'layout',
       category: 'custom',
-      description: `${targetPage.title} (${targetPage.width}x${targetPage.height})`
-    });
+      description: template.title,
+    };
+    setActivePreset(preset);
 
     canvas.clear();
-    if (targetPage.jsonState) {
-      canvas.loadFromJSON(targetPage.jsonState, () => {
+
+    if (template.backgroundColor) {
+      canvas.setBackgroundColor(template.backgroundColor, () => {
         canvas.requestRenderAll();
       });
+      setBackgroundColor(template.backgroundColor);
     } else {
-      canvas.setBackgroundColor(targetPage.backgroundColor, () => {
+      canvas.setBackgroundColor('#ffffff', () => {
         canvas.requestRenderAll();
+      });
+      setBackgroundColor('#ffffff');
+    }
+
+    if (template.elements) {
+      template.elements.forEach((objConfig: any) => {
+        if (objConfig.type === 'i-text' || objConfig.type === 'text') {
+          const textObj = new fabric.IText(objConfig.text || 'Sample Text', {
+            left: objConfig.left,
+            top: objConfig.top,
+            fontSize: objConfig.fontSize || 32,
+            fill: objConfig.fill || '#000000',
+            fontFamily: objConfig.fontFamily || 'Inter, sans-serif',
+            fontWeight: objConfig.fontWeight || 'normal',
+            originX: 'center',
+            originY: 'center',
+          });
+          canvas.add(textObj);
+        } else if (objConfig.type === 'rect') {
+          const rectObj = new fabric.Rect({
+            left: objConfig.left,
+            top: objConfig.top,
+            width: objConfig.width || 100,
+            height: objConfig.height || 100,
+            fill: objConfig.fill || '#3b82f6',
+            originX: 'center',
+            originY: 'center',
+          });
+          canvas.add(rectObj);
+        } else if (objConfig.type === 'circle') {
+          const circleObj = new fabric.Circle({
+            left: objConfig.left,
+            top: objConfig.top,
+            radius: objConfig.radius || 50,
+            fill: objConfig.fill || '#10b981',
+            originX: 'center',
+            originY: 'center',
+          });
+          canvas.add(circleObj);
+        }
       });
     }
+
+    canvas.requestRenderAll();
+    saveState();
   };
 
-  // Insert Page with Chosen Ratio
-  const handleConfirmAddPage = (chosenPreset: CanvasPreset) => {
-    if (!canvas) return;
-
-    const currentState = JSON.stringify(canvas.toJSON());
-    setPages((prevPages) =>
-      prevPages.map((p) => (p.id === currentPageId ? { ...p, jsonState: currentState } : p))
-    );
-
-    const newId = `page-${pages.length + 1}`;
-    const newPage: CanvasPage = {
-      id: newId,
-      title: `Page ${pages.length + 1}`,
-      width: chosenPreset.width,
-      height: chosenPreset.height,
-      aspectRatio: chosenPreset.aspectRatio,
-      backgroundColor,
-    };
-
-    setPages((prev) => [...prev, newPage]);
-    setCurrentPageId(newId);
-    setActivePreset(chosenPreset);
-
-    canvas.clear();
-    canvas.setBackgroundColor(backgroundColor, () => {
-      canvas.requestRenderAll();
-    });
-  };
-
-  const handleDuplicatePage = (pageId: string) => {
-    if (!canvas) return;
-    const jsonState = JSON.stringify(canvas.toJSON());
-    const sourcePage = pages.find((p) => p.id === pageId);
-
-    const newId = `page-${pages.length + 1}`;
-    const newPage: CanvasPage = {
-      id: newId,
-      title: `Page ${pages.length + 1} (Copy)`,
-      width: sourcePage?.width || activePreset.width,
-      height: sourcePage?.height || activePreset.height,
-      aspectRatio: sourcePage?.aspectRatio || activePreset.aspectRatio,
-      jsonState,
-      backgroundColor,
-    };
-    setPages([...pages, newPage]);
-    setCurrentPageId(newId);
-  };
-
-  const handleDeletePage = (pageId: string) => {
-    if (pages.length <= 1) return;
-    const filtered = pages.filter((p) => p.id !== pageId);
-    setPages(filtered);
-    setCurrentPageId(filtered[0].id);
-  };
-
+  // Save Canvas to JSON File
   const handleSaveJson = () => {
     if (!canvas) return;
-    exportCanvas(canvas, 'json', designTitle);
+    const jsonString = JSON.stringify(canvas.toJSON(['id', 'name', 'isLocked', 'rx', 'ry']));
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${designTitle.replace(/\s+/g, '_')}.docmaster`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
+  // Load Canvas from JSON File
   const handleLoadJson = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!canvas || !e.target.files || !e.target.files[0]) return;
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (!file || !canvas) return;
+
     const reader = new FileReader();
     reader.onload = (event) => {
-      if (event.target?.result) {
-        const jsonString = event.target.result as string;
-        canvas.loadFromJSON(jsonString, () => {
+      const contents = event.target?.result as string;
+      try {
+        canvas.loadFromJSON(contents, () => {
           canvas.requestRenderAll();
           saveState();
         });
+      } catch (err) {
+        alert('Invalid .docmaster file format');
       }
     };
     reader.readAsText(file);
+    e.target.value = '';
   };
 
+  // Reset to New Blank Design
   const handleNewDesign = () => {
     if (!canvas) return;
-    if (window.confirm('Create a new blank canvas? Unsaved changes will be cleared.')) {
+    if (confirm('Create new blank design? Unsaved changes will be cleared.')) {
       canvas.clear();
       canvas.setBackgroundColor('#ffffff', () => {
         canvas.requestRenderAll();
       });
       setBackgroundColor('#ffffff');
       setDesignTitle('Untitled Design');
+      historyStack.current = [];
+      historyIndex.current = -1;
       saveState();
     }
   };
 
-  const handleToggleWatermarkAction = () => {
+  // Preset & Page Aspect Ratio Handlers
+  const handleSelectPreset = (preset: CanvasPreset) => {
+    setActivePreset(preset);
+    setPages((prevPages) =>
+      prevPages.map((p) =>
+        p.id === currentPageId
+          ? {
+              ...p,
+              width: preset.width,
+              height: preset.height,
+              aspectRatio: preset.aspectRatio,
+            }
+          : p
+      )
+    );
+  };
+
+  // Multi-Page Handlers
+  const handleSelectPage = (pageId: string) => {
+    setCurrentPageId(pageId);
+    const targetPage = pages.find((p) => p.id === pageId);
+    if (!targetPage) return;
+
+    setActivePreset({
+      id: `preset-${targetPage.id}`,
+      name: targetPage.title || 'Page',
+      width: targetPage.width,
+      height: targetPage.height,
+      aspectRatio: targetPage.aspectRatio || `${targetPage.width}:${targetPage.height}`,
+      iconName: 'layout',
+      category: 'custom',
+      description: `${targetPage.width}×${targetPage.height} px`,
+    });
+
     if (canvas) {
-      toggleWatermark(canvas, 'DOCMASTER DRAFT');
+      if (targetPage.jsonState) {
+        isUndoRedoAction.current = true;
+        canvas.loadFromJSON(targetPage.jsonState, () => {
+          canvas.requestRenderAll();
+          isUndoRedoAction.current = false;
+          historyStack.current = [targetPage.jsonState!];
+          historyIndex.current = 0;
+          setCanUndo(false);
+          setCanRedo(false);
+        });
+      } else {
+        canvas.clear();
+        canvas.setBackgroundColor(targetPage.backgroundColor || '#ffffff', () => {
+          canvas.requestRenderAll();
+        });
+      }
     }
   };
 
+  const handleConfirmAddPage = (preset: CanvasPreset) => {
+    const newPageId = `page-${Date.now()}`;
+    const newPage: CanvasPage = {
+      id: newPageId,
+      title: `Page ${pages.length + 1}`,
+      width: preset.width,
+      height: preset.height,
+      aspectRatio: preset.aspectRatio,
+      backgroundColor: '#ffffff',
+    };
+    setPages((prev) => [...prev, newPage]);
+    setCurrentPageId(newPageId);
+    setActivePreset(preset);
+  };
+
+  const handleDuplicatePage = (pageId: string) => {
+    const targetPage = pages.find((p) => p.id === pageId);
+    if (!targetPage) return;
+
+    const duplicatedPageId = `page-${Date.now()}`;
+    const newPage: CanvasPage = {
+      ...targetPage,
+      id: duplicatedPageId,
+      title: `${targetPage.title} (Copy)`,
+    };
+
+    const index = pages.findIndex((p) => p.id === pageId);
+    const newPages = [...pages];
+    newPages.splice(index + 1, 0, newPage);
+    setPages(newPages);
+    setCurrentPageId(duplicatedPageId);
+  };
+
+  const handleDeletePage = (pageId: string) => {
+    if (pages.length <= 1) {
+      alert('Document must contain at least one page.');
+      return;
+    }
+
+    const filtered = pages.filter((p) => p.id !== pageId);
+    setPages(filtered);
+
+    if (currentPageId === pageId) {
+      setCurrentPageId(filtered[0].id);
+    }
+  };
+
+  // 1. Unauthenticated Public Landing Page (Image 1 View)
+  if (view === 'landing' && !currentUser) {
+    return (
+      <LandingPage
+        onOpenLogin={() => setView('auth')}
+        onOpenSignup={() => setView('auth')}
+      />
+    );
+  }
+
+  // 2. Auth View Screen (Sign In / Register Modal)
+  if (view === 'auth' || !currentUser) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
+  // 3. Post-Login Canva-Style Dashboard (Image 2 View with Recent Projects)
+  if (view === 'dashboard') {
+    return (
+      <Dashboard
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onOpenProject={handleOpenProject}
+        onCreateNewProject={(preset, title) => {
+          if (!currentUser) return;
+          const newProj = createNewProject(currentUser.id, title || 'Untitled Project', preset);
+          handleOpenProject(newProj.id);
+        }}
+      />
+    );
+  }
+
+  const currentPage = pages.find((p) => p.id === currentPageId) || pages[0];
+  const currentWidth = currentPage ? currentPage.width : activePreset.width;
+  const currentHeight = currentPage ? currentPage.height : activePreset.height;
+
+  // 4. Canvas Editor Workspace Screen
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-canva-bg text-gray-100 select-none">
-      {/* Top Header Navbar */}
+    <div className="flex flex-col h-screen w-screen bg-canva-bg overflow-hidden select-none">
+      {/* Top Header Bar */}
       <HeaderBar
         title={designTitle}
-        onTitleChange={setDesignTitle}
-        activePreset={activePreset}
+        onTitleChange={(newTitle) => {
+          setDesignTitle(newTitle);
+          saveCurrentProjectToStorage();
+        }}
+        activePreset={{
+          ...activePreset,
+          width: currentWidth,
+          height: currentHeight,
+          aspectRatio: currentPage ? currentPage.aspectRatio : activePreset.aspectRatio,
+        }}
         onOpenResizeModal={() => setIsResizeOpen(true)}
         onUndo={handleUndo}
         onRedo={handleRedo}
@@ -320,34 +652,28 @@ export function App() {
         canRedo={canRedo}
         onOpenExportModal={() => setIsExportOpen(true)}
         onOpenPresentModal={() => setIsPresentOpen(true)}
-        onToggleWatermark={handleToggleWatermarkAction}
+        onToggleWatermark={() => canvas && toggleWatermark(canvas)}
         onSaveJson={handleSaveJson}
         onLoadJson={handleLoadJson}
         onNewDesign={handleNewDesign}
+        onBackToDashboard={handleBackToDashboard}
+        currentUser={currentUser}
         onLogout={handleLogout}
       />
 
-      {/* Contextual Object Toolbar */}
+      {/* Contextual Properties Bar for Active Object */}
       <ContextualToolbar canvas={canvas} selectedObject={selectedObject} />
 
-      {/* Main Workspace Area */}
+      {/* Main Work Area: Left Sidebar Navigation + Panel + Canvas */}
       <div className="flex flex-1 overflow-hidden relative">
-        {/* Left Vertical Icon Bar */}
+        {/* Navigation Sidebar */}
         <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* Active Side Panel */}
-        {activeTab === 'templates' && (
-          <TemplatesPanel canvas={canvas} onApplyTemplate={handleApplyTemplate} />
-        )}
+        {/* Panel Content per Active Tab */}
         {activeTab === 'elements' && <ElementsPanel canvas={canvas} />}
         {activeTab === 'icons' && <IconsPanel canvas={canvas} />}
         {activeTab === 'text' && <TextPanel canvas={canvas} />}
-        {activeTab === 'qrcode' && <QRCodePanel canvas={canvas} />}
-        {activeTab === 'codecard' && <CodeCardPanel canvas={canvas} />}
-        {activeTab === 'accessibility' && (
-          <AccessibilityPanel canvas={canvas} backgroundColor={backgroundColor} />
-        )}
-        {activeTab === 'uploads' && <UploadsPanel canvas={canvas} />}
+        {activeTab === 'uploads' && <UploadsPanel canvas={canvas} currentUser={currentUser} />}
         {activeTab === 'draw' && <DrawPanel canvas={canvas} />}
         {activeTab === 'backgrounds' && (
           <BackgroundsPanel
@@ -357,22 +683,20 @@ export function App() {
           />
         )}
         {activeTab === 'brandkit' && (
-          <BrandKitPanel
-            canvas={canvas}
-            onSetBackgroundColor={setBackgroundColor}
-          />
+          <BrandKitPanel canvas={canvas} onSetBackgroundColor={setBackgroundColor} />
         )}
         {activeTab === 'layers' && <LayersPanel canvas={canvas} />}
 
         {/* Canvas Editing Board */}
         <CanvasEditor
-          width={activePreset.width}
-          height={activePreset.height}
+          width={currentWidth}
+          height={currentHeight}
           backgroundColor={backgroundColor}
           onCanvasReady={handleCanvasReady}
           onSelectionChange={setSelectedObject}
           zoom={zoom}
           setZoom={setZoom}
+          onRegisterFitZoom={(fn) => { fitZoomFnRef.current = fn; }}
         />
       </div>
 
@@ -386,7 +710,7 @@ export function App() {
         onDeletePage={handleDeletePage}
         zoom={zoom}
         setZoom={setZoom}
-        onZoomFit={() => setZoom(100)}
+        onZoomFit={handleZoomFit}
       />
 
       {/* Dialog Modals */}
@@ -399,16 +723,34 @@ export function App() {
 
       <ExportModal
         canvas={canvas}
+        pages={pages}
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
         designTitle={designTitle}
+        onExportSuccess={(fmt) => {
+          setLastExportFormat(fmt);
+          setIsFeedbackOpen(true);
+        }}
+      />
+
+      <FeedbackModal
+        isOpen={isFeedbackOpen}
+        onClose={() => setIsFeedbackOpen(false)}
+        designTitle={designTitle}
+        exportFormat={lastExportFormat}
+        currentUser={currentUser}
       />
 
       <ResizeModal
         isOpen={isResizeOpen}
         onClose={() => setIsResizeOpen(false)}
-        activePreset={activePreset}
-        onSelectPreset={setActivePreset}
+        activePreset={{
+          ...activePreset,
+          width: currentWidth,
+          height: currentHeight,
+          aspectRatio: currentPage ? currentPage.aspectRatio : activePreset.aspectRatio,
+        }}
+        onSelectPreset={handleSelectPreset}
       />
 
       <PresentModal

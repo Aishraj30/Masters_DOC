@@ -9,7 +9,7 @@ export type CanvasPreset = {
   description: string;
 };
 
-export type ActiveTab = 'templates' | 'elements' | 'icons' | 'text' | 'uploads' | 'draw' | 'backgrounds' | 'brandkit' | 'qrcode' | 'codecard' | 'accessibility' | 'layers';
+export type ActiveTab = 'elements' | 'icons' | 'text' | 'uploads' | 'draw' | 'backgrounds' | 'brandkit' | 'qrcode' | 'codecard' | 'accessibility' | 'layers';
 
 export type FontOption = {
   name: string;

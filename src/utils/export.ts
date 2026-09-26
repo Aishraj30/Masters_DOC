@@ -2,6 +2,8 @@ import { fabric } from 'fabric';
 import jsPDF from 'jspdf';
 import PptxGenJS from 'pptxgenjs';
 import confetti from 'canvas-confetti';
+import { CanvasPage } from '../types/canvas';
+import { addWatermarkToCanvas, removeWatermarkFromCanvas } from './watermark';
 
 export type ExportFormat = 'png' | 'jpeg' | 'svg' | 'pdf' | 'json' | 'pptx';
 
@@ -10,105 +12,224 @@ export const exportCanvas = async (
   format: ExportFormat,
   filename: string = 'docmaster-design',
   multiplier: number = 2,
-  quality: number = 0.95
+  quality: number = 0.95,
+  pages?: CanvasPage[]
 ) => {
   if (!canvas) return;
 
   // Deselect active object to avoid selection box border in export
   canvas.discardActiveObject();
+
+  // Check if canvas already had a watermark before export
+  const hadWatermarkBefore = canvas.getObjects().some((obj) => (obj as any).isWatermark);
+
+  // Apply watermark for export
+  if (!hadWatermarkBefore) {
+    addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+  }
+
   canvas.requestRenderAll();
 
   const title = filename.trim().toLowerCase().replace(/\s+/g, '-') || 'docmaster-design';
 
-  switch (format) {
-    case 'png': {
-      const dataUrl = canvas.toDataURL({
-        format: 'png',
-        multiplier,
-      });
-      triggerDownload(dataUrl, `${title}.png`);
-      fireConfetti();
-      break;
+  try {
+    // Multi-page PDF or PPTX export
+    if (pages && pages.length > 1 && (format === 'pdf' || format === 'pptx')) {
+      if (format === 'pdf') {
+        const width = canvas.width || 1080;
+        const height = canvas.height || 1080;
+        const orientation = width > height ? 'l' : 'p';
+        const pdf = new jsPDF({
+          orientation,
+          unit: 'px',
+          format: [width, height],
+        });
+
+        for (let i = 0; i < pages.length; i++) {
+          const page = pages[i];
+          if (i > 0) pdf.addPage([width, height], orientation);
+
+          if (page.jsonState) {
+            await new Promise<void>((resolve) => {
+              canvas.loadFromJSON(page.jsonState, () => {
+                addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+                canvas.renderAll();
+                const imgData = canvas.toDataURL({
+                  format: 'jpeg',
+                  quality: 1.0,
+                  multiplier,
+                });
+                pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
+                resolve();
+              });
+            });
+          } else {
+            addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+            canvas.renderAll();
+            const imgData = canvas.toDataURL({
+              format: 'jpeg',
+              quality: 1.0,
+              multiplier,
+            });
+            pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
+          }
+        }
+        pdf.save(`${title}.pdf`);
+        fireConfetti();
+        return;
+      }
+
+      if (format === 'pptx') {
+        const pptx = new PptxGenJS();
+        const width = canvas.width || 1280;
+        const height = canvas.height || 720;
+
+        pptx.defineLayout({
+          name: 'CUSTOM',
+          width: width / 96,
+          height: height / 96,
+        });
+        pptx.layout = 'CUSTOM';
+
+        for (let i = 0; i < pages.length; i++) {
+          const page = pages[i];
+          const slide = pptx.addSlide();
+
+          if (page.jsonState) {
+            await new Promise<void>((resolve) => {
+              canvas.loadFromJSON(page.jsonState, () => {
+                addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+                canvas.renderAll();
+                const imgData = canvas.toDataURL({
+                  format: 'png',
+                  multiplier,
+                });
+                slide.addImage({
+                  data: imgData,
+                  x: 0,
+                  y: 0,
+                  w: width / 96,
+                  h: height / 96,
+                });
+                resolve();
+              });
+            });
+          } else {
+            addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+            canvas.renderAll();
+            const imgData = canvas.toDataURL({
+              format: 'png',
+              multiplier,
+            });
+            slide.addImage({
+              data: imgData,
+              x: 0,
+              y: 0,
+              w: width / 96,
+              h: height / 96,
+            });
+          }
+        }
+        await pptx.writeFile({ fileName: `${title}.pptx` });
+        fireConfetti();
+        return;
+      }
     }
-    case 'jpeg': {
-      const dataUrl = canvas.toDataURL({
-        format: 'jpeg',
-        quality,
-        multiplier,
-      });
-      triggerDownload(dataUrl, `${title}.jpg`);
-      fireConfetti();
-      break;
+
+    // Standard export for PNG, JPEG, SVG, JSON or single page PDF/PPTX
+    switch (format) {
+      case 'png': {
+        const dataUrl = canvas.toDataURL({
+          format: 'png',
+          multiplier,
+        });
+        triggerDownload(dataUrl, `${title}.png`);
+        fireConfetti();
+        break;
+      }
+      case 'jpeg': {
+        const dataUrl = canvas.toDataURL({
+          format: 'jpeg',
+          quality,
+          multiplier,
+        });
+        triggerDownload(dataUrl, `${title}.jpg`);
+        fireConfetti();
+        break;
+      }
+      case 'svg': {
+        const svgData = canvas.toSVG();
+        const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        triggerDownload(url, `${title}.svg`);
+        fireConfetti();
+        break;
+      }
+      case 'json': {
+        const jsonString = JSON.stringify(canvas.toJSON(['id', 'name', 'isLocked', 'rx', 'ry']));
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        triggerDownload(url, `${title}.docmaster`);
+        break;
+      }
+      case 'pdf': {
+        const width = canvas.width || 1080;
+        const height = canvas.height || 1080;
+        const orientation = width > height ? 'l' : 'p';
+
+        const imgData = canvas.toDataURL({
+          format: 'jpeg',
+          quality: 1.0,
+          multiplier,
+        });
+
+        const pdf = new jsPDF({
+          orientation,
+          unit: 'px',
+          format: [width, height],
+        });
+
+        pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
+        pdf.save(`${title}.pdf`);
+        fireConfetti();
+        break;
+      }
+      case 'pptx': {
+        const pptx = new PptxGenJS();
+        const width = canvas.width || 1280;
+        const height = canvas.height || 720;
+
+        pptx.defineLayout({
+          name: 'CUSTOM',
+          width: width / 96,
+          height: height / 96,
+        });
+        pptx.layout = 'CUSTOM';
+
+        const slide = pptx.addSlide();
+
+        const imgData = canvas.toDataURL({
+          format: 'png',
+          multiplier,
+        });
+
+        slide.addImage({
+          data: imgData,
+          x: 0,
+          y: 0,
+          w: width / 96,
+          h: height / 96,
+        });
+
+        await pptx.writeFile({ fileName: `${title}.pptx` });
+        fireConfetti();
+        break;
+      }
     }
-    case 'svg': {
-      const svgData = canvas.toSVG();
-      const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      triggerDownload(url, `${title}.svg`);
-      fireConfetti();
-      break;
-    }
-    case 'json': {
-      const jsonString = JSON.stringify(canvas.toJSON(['id', 'name', 'isLocked', 'rx', 'ry']));
-      const blob = new Blob([jsonString], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      triggerDownload(url, `${title}.docmaster`);
-      break;
-    }
-    case 'pdf': {
-      const width = canvas.width || 1080;
-      const height = canvas.height || 1080;
-      const orientation = width > height ? 'l' : 'p';
-      
-      const imgData = canvas.toDataURL({
-        format: 'jpeg',
-        quality: 1.0,
-        multiplier: 2,
-      });
-
-      const pdf = new jsPDF({
-        orientation,
-        unit: 'px',
-        format: [width, height],
-      });
-
-      pdf.addImage(imgData, 'JPEG', 0, 0, width, height);
-      pdf.save(`${title}.pdf`);
-      fireConfetti();
-      break;
-    }
-    case 'pptx': {
-      const pptx = new PptxGenJS();
-      const width = canvas.width || 1280;
-      const height = canvas.height || 720;
-      
-      // Configure 16:9 or custom slide size in inches (72 DPI baseline)
-      pptx.defineLayout({
-        name: 'CUSTOM',
-        width: width / 96,
-        height: height / 96,
-      });
-      pptx.layout = 'CUSTOM';
-
-      const slide = pptx.addSlide();
-
-      // Export canvas as PNG data URL for high-fidelity PowerPoint slide insertion
-      const imgData = canvas.toDataURL({
-        format: 'png',
-        multiplier: 2,
-      });
-
-      slide.addImage({
-        data: imgData,
-        x: 0,
-        y: 0,
-        w: width / 96,
-        h: height / 96,
-      });
-
-      await pptx.writeFile({ fileName: `${title}.pptx` });
-      fireConfetti();
-      break;
+  } finally {
+    // If watermark was added temporarily for export, clean up so canvas editing stays clean
+    if (!hadWatermarkBefore) {
+      removeWatermarkFromCanvas(canvas);
     }
   }
 };

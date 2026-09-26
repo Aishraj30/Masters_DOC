@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-[#0e1318] text-gray-100 antialiased overflow-hidden font-sans;
+    @apply bg-[#0e1318] text-gray-100 antialiased font-sans;
   }
 }
 

@@ -3,11 +3,15 @@ import { fabric } from 'fabric';
 import { X, Download, FileImage, FileCode, FileText, CheckCircle2, Presentation } from 'lucide-react';
 import { exportCanvas, ExportFormat } from '../../utils/export';
 
+import { CanvasPage } from '../../types/canvas';
+
 interface ExportModalProps {
   canvas: fabric.Canvas | null;
   isOpen: boolean;
   onClose: () => void;
   designTitle: string;
+  onExportSuccess?: (format: ExportFormat) => void;
+  pages?: CanvasPage[];
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({
@@ -15,6 +19,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   onClose,
   designTitle,
+  onExportSuccess,
+  pages,
 }) => {
   const [format, setFormat] = useState<ExportFormat>('png');
   const [scale, setScale] = useState<number>(2);
@@ -24,9 +30,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   const handleExport = async () => {
     setIsExporting(true);
-    await exportCanvas(canvas, format, designTitle, scale);
+    await exportCanvas(canvas, format, designTitle, scale, 0.95, pages);
     setIsExporting(false);
     onClose();
+    if (onExportSuccess) {
+      onExportSuccess(format);
+    }
   };
 
   const formatOptions = [

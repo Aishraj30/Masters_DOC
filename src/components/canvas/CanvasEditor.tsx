@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { fabric } from 'fabric';
 import { ObjectProperties } from '../../types/canvas';
 import { 
@@ -7,7 +7,8 @@ import {
   groupSelectedObjects, 
   ungroupSelectedObject, 
   addSvgIconPath,
-  getFixedArrowheadPathData 
+  getFixedArrowheadPathData,
+  getResponsiveElementSize
 } from '../../utils/fabricHelpers';
 
 interface CanvasEditorProps {
@@ -17,7 +18,8 @@ interface CanvasEditorProps {
   onCanvasReady: (canvas: fabric.Canvas) => void;
   onSelectionChange: (props: ObjectProperties | null) => void;
   zoom: number;
-  setZoom: (zoom: number) => void;
+  setZoom: React.Dispatch<React.SetStateAction<number>>;
+  onRegisterFitZoom?: (fitZoomFn: () => void) => void;
 }
 
 export const CanvasEditor: React.FC<CanvasEditorProps> = ({
@@ -28,10 +30,46 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
   onSelectionChange,
   zoom,
   setZoom,
+  onRegisterFitZoom,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Auto-fit zoom calculation logic
+  const handleFitZoom = useCallback(() => {
+    if (!containerRef.current) return;
+    const containerW = containerRef.current.clientWidth;
+    const containerH = containerRef.current.clientHeight;
+
+    // Deduct padding (64px) to ensure comfortable margins around canvas
+    const availW = Math.max(100, containerW - 64);
+    const availH = Math.max(100, containerH - 64);
+
+    const scaleX = availW / width;
+    const scaleY = availH / height;
+    const fitScale = Math.min(scaleX, scaleY);
+
+    // Limit fit zoom between 10% and 150%
+    const maxFitZoom = width < 600 || height < 600 ? 100 : 150;
+    const fitZoom = Math.max(10, Math.min(maxFitZoom, Math.floor(fitScale * 100)));
+    setZoom(fitZoom);
+  }, [width, height, setZoom]);
+
+  // Expose fitZoom handler to parent component if registered
+  useEffect(() => {
+    if (onRegisterFitZoom) {
+      onRegisterFitZoom(handleFitZoom);
+    }
+  }, [onRegisterFitZoom, handleFitZoom]);
+
+  // Trigger auto-fit zoom when canvas resolution dimensions change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleFitZoom();
+    }, 40);
+    return () => clearTimeout(timer);
+  }, [width, height, handleFitZoom]);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -165,12 +203,12 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
     // Mouse wheel zoom handling
     canvas.on('mouse:wheel', (opt) => {
       const delta = opt.e.deltaY;
-      let newZoom = canvas.getZoom() * (0.999 ** delta);
-      if (newZoom > 5) newZoom = 5;
-      if (newZoom < 0.1) newZoom = 0.1;
-      
-      canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, newZoom);
-      setZoom(Math.round(newZoom * 100));
+      setZoom((prevZoom) => {
+        let newZoom = Math.round(prevZoom * (0.999 ** delta));
+        if (newZoom > 500) newZoom = 500;
+        if (newZoom < 10) newZoom = 10;
+        return newZoom;
+      });
       opt.e.preventDefault();
       opt.e.stopPropagation();
     });
@@ -237,10 +275,10 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
         const clientX = e.clientX - rect.left;
         const clientY = e.clientY - rect.top;
 
-        // Convert client coordinates to canvas zoom/pan position
         const zoomLevel = zoom / 100;
-        const x = clientX / zoomLevel - 40;
-        const y = clientY / zoomLevel - 40;
+        const iconSize = getResponsiveElementSize(canvas, 100, 0.14);
+        const x = clientX / zoomLevel - iconSize / 2;
+        const y = clientY / zoomLevel - iconSize / 2;
 
         addSvgIconPath(canvas, data.svgPath, data.color || '#000000', { x, y }, data.strokeWidth || 2);
       }
@@ -249,23 +287,40 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
     }
   };
 
+  const scale = zoom / 100;
+  const scaledW = width * scale;
+  const scaledH = height * scale;
+
   return (
     <div
       ref={containerRef}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="flex-1 h-full canvas-checkerboard overflow-auto flex items-center justify-center p-12 relative select-none"
+      className="flex-1 h-full canvas-checkerboard overflow-auto flex items-center justify-center p-8 relative select-none"
     >
-      <div 
-        className="shadow-2xl transition-shadow border border-canva-border/50 rounded-sm bg-white"
+      <div
         style={{
-          width: `${width}px`,
-          height: `${height}px`,
-          transform: `scale(${zoom / 100})`,
-          transformOrigin: 'center center',
+          width: `${scaledW}px`,
+          height: `${scaledH}px`,
+          minWidth: `${scaledW}px`,
+          minHeight: `${scaledH}px`,
+          position: 'relative',
         }}
+        className="flex items-center justify-center shadow-2xl border border-canva-border/50 rounded-sm bg-white overflow-hidden"
       >
-        <canvas ref={canvasRef} />
+        <div 
+          style={{
+            width: `${width}px`,
+            height: `${height}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+        >
+          <canvas ref={canvasRef} />
+        </div>
       </div>
     </div>
   );

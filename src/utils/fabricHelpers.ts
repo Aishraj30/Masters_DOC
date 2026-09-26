@@ -1,12 +1,31 @@
 import { fabric } from 'fabric';
 
+/**
+ * Calculates a responsive default size for newly added elements based on canvas resolution.
+ * Target default ratio: ~15-20% of canvas min dimension (clamped to sensible bounds).
+ */
+export const getResponsiveElementSize = (
+  canvas: fabric.Canvas,
+  defaultBaseSize: number = 150,
+  targetRatio: number = 0.18
+): number => {
+  if (!canvas) return defaultBaseSize;
+  const canvasWidth = canvas.width || 1000;
+  const canvasHeight = canvas.height || 1000;
+  const minDim = Math.min(canvasWidth, canvasHeight);
+  
+  const proportionalSize = Math.round(minDim * targetRatio);
+  return Math.max(40, Math.min(800, proportionalSize));
+};
+
 export const addHeadingText = (canvas: fabric.Canvas, text: string = 'Add a heading') => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const fontSize = Math.max(28, Math.round((canvas.height || 1000) * 0.054));
   const heading = new fabric.IText(text, {
-    left: center.left - 150,
-    top: center.top - 40,
-    fontSize: 54,
+    left: center.left - fontSize * 2.5,
+    top: center.top - fontSize * 0.8,
+    fontSize,
     fontFamily: 'Montserrat',
     fontWeight: 'bold',
     fill: '#ffffff',
@@ -19,10 +38,11 @@ export const addHeadingText = (canvas: fabric.Canvas, text: string = 'Add a head
 export const addSubheadingText = (canvas: fabric.Canvas, text: string = 'Add a subheading') => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const fontSize = Math.max(20, Math.round((canvas.height || 1000) * 0.032));
   const subheading = new fabric.IText(text, {
-    left: center.left - 120,
+    left: center.left - fontSize * 3.5,
     top: center.top,
-    fontSize: 32,
+    fontSize,
     fontFamily: 'Poppins',
     fontWeight: '600',
     fill: '#e2e8f0',
@@ -35,10 +55,11 @@ export const addSubheadingText = (canvas: fabric.Canvas, text: string = 'Add a s
 export const addBodyText = (canvas: fabric.Canvas, text: string = 'Add a little bit of body text') => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const fontSize = Math.max(14, Math.round((canvas.height || 1000) * 0.022));
   const bodyText = new fabric.IText(text, {
-    left: center.left - 100,
-    top: center.top + 40,
-    fontSize: 22,
+    left: center.left - fontSize * 4.5,
+    top: center.top + fontSize * 1.5,
+    fontSize,
     fontFamily: 'Inter',
     fill: '#94a3b8',
   });
@@ -66,17 +87,18 @@ export const addRectangle = (
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const size = getResponsiveElementSize(canvas, 150, 0.18);
   const rect = new fabric.Rect({
-    left: center.left - 75,
-    top: center.top - 75,
-    width: 150,
-    height: 150,
+    left: center.left - size / 2,
+    top: center.top - size / 2,
+    width: size,
+    height: size,
     fill: isHollow ? 'transparent' : color,
     stroke: strokeColor,
     strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
     strokeUniform: true,
-    rx: 12,
-    ry: 12,
+    rx: Math.round(size * 0.08),
+    ry: Math.round(size * 0.08),
   });
   canvas.add(rect);
   canvas.setActiveObject(rect);
@@ -92,10 +114,11 @@ export const addCircle = (
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const size = getResponsiveElementSize(canvas, 150, 0.18);
   const circle = new fabric.Circle({
-    left: center.left - 75,
-    top: center.top - 75,
-    radius: 75,
+    left: center.left - size / 2,
+    top: center.top - size / 2,
+    radius: size / 2,
     fill: isHollow ? 'transparent' : color,
     stroke: strokeColor,
     strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
@@ -677,8 +700,9 @@ export const addSvgIconPath = (
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
-  const posX = position ? position.x : center.left - 40;
-  const posY = position ? position.y : center.top - 40;
+  const iconSize = getResponsiveElementSize(canvas, 100, 0.14);
+  const posX = position ? position.x : center.left - iconSize / 2;
+  const posY = position ? position.y : center.top - iconSize / 2;
 
   const path = new fabric.Path(pathData, {
     left: posX,
@@ -690,7 +714,7 @@ export const addSvgIconPath = (
     strokeLineCap: 'round',
     strokeLineJoin: 'round',
   });
-  path.scaleToWidth(80);
+  path.scaleToWidth(iconSize);
   canvas.add(path);
   canvas.setActiveObject(path);
   canvas.requestRenderAll();

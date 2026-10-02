@@ -3,11 +3,6 @@ import {
   Plus,
   Home,
   Folder,
-  LayoutTemplate,
-  Crown,
-  Sparkles,
-  ShoppingBag,
-  MoreHorizontal,
   Bell,
   LogOut,
 } from 'lucide-react';
@@ -31,10 +26,6 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   const navItems = [
     { id: 'home' as const, label: 'Home', icon: Home },
     { id: 'projects' as const, label: 'Projects', icon: Folder },
-    // { id: 'templates' as const, label: 'Templates', icon: LayoutTemplate },
-    { id: 'brand' as const, label: 'Brand', icon: Crown },
-    { id: 'ai' as const, label: 'Canva AI', icon: Sparkles },
-    { id: 'print' as const, label: 'Print Shop', icon: ShoppingBag },
   ];
 
   return (

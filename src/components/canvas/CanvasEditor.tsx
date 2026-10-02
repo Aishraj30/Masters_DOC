@@ -7,9 +7,21 @@ import {
   groupSelectedObjects, 
   ungroupSelectedObject, 
   addSvgIconPath,
+  addLucideIconToCanvas,
+  addIconifySvgToCanvas,
+  addImageFromUrl,
+  addRectangle,
+  addCircle,
+  addTriangle,
+  addStar,
+  addHexagon,
+  addDiamond,
+  addHeart,
+  addPillShape,
   getFixedArrowheadPathData,
   getResponsiveElementSize
 } from '../../utils/fabricHelpers';
+import { ICON_DICTIONARY } from '../../constants/lucideIconDictionary';
 
 interface CanvasEditorProps {
   width: number;
@@ -94,12 +106,30 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
         return;
       }
 
+      let fill = (activeObj.fill as string) || '';
+      let stroke = activeObj.stroke as string || '';
+      let strokeWidth = activeObj.strokeWidth || 0;
+
+      if ((activeObj.type === 'group' || activeObj.type === 'activeSelection') && (activeObj as fabric.Group).getObjects().length > 0) {
+        const children = (activeObj as fabric.Group).getObjects();
+        const firstChild = children[0];
+        if (!fill || fill === 'transparent') {
+          fill = (firstChild.fill as string) || fill;
+        }
+        if (!stroke) {
+          stroke = firstChild.stroke || stroke;
+        }
+        if (!strokeWidth) {
+          strokeWidth = firstChild.strokeWidth || strokeWidth;
+        }
+      }
+
       const type = activeObj.type as ObjectProperties['type'];
       const props: ObjectProperties = {
         type,
-        fill: (activeObj.fill as string) || '#ffffff',
-        stroke: activeObj.stroke || '',
-        strokeWidth: activeObj.strokeWidth || 0,
+        fill: fill || '#ffffff',
+        stroke: stroke || '',
+        strokeWidth: strokeWidth || 0,
         opacity: activeObj.opacity !== undefined ? activeObj.opacity : 1,
         fontFamily: (activeObj as fabric.IText).fontFamily || 'Inter',
         fontSize: (activeObj as fabric.IText).fontSize || 24,
@@ -270,20 +300,40 @@ export const CanvasEditor: React.FC<CanvasEditorProps> = ({
       if (!dataStr) return;
 
       const data = JSON.parse(dataStr);
-      if (data.type === 'icon' && data.svgPath) {
-        const rect = canvasRef.current.getBoundingClientRect();
-        const clientX = e.clientX - rect.left;
-        const clientY = e.clientY - rect.top;
+      const rect = canvasRef.current.getBoundingClientRect();
+      const clientX = e.clientX - rect.left;
+      const clientY = e.clientY - rect.top;
 
-        const zoomLevel = zoom / 100;
-        const iconSize = getResponsiveElementSize(canvas, 100, 0.14);
-        const x = clientX / zoomLevel - iconSize / 2;
-        const y = clientY / zoomLevel - iconSize / 2;
+      const zoomLevel = zoom / 100;
+      const iconSize = getResponsiveElementSize(canvas, 100, 0.14);
+      const posX = clientX / zoomLevel - iconSize / 2;
+      const posY = clientY / zoomLevel - iconSize / 2;
+      const pos = { x: posX, y: posY };
 
-        addSvgIconPath(canvas, data.svgPath, data.color || '#000000', { x, y }, data.strokeWidth || 2);
+      if (data.type === 'lucide-icon') {
+        const item = ICON_DICTIONARY.find((i) => i.id === data.id || i.name === data.name);
+        if (item && item.icon) {
+          addLucideIconToCanvas(canvas, item.icon, data.color || '#000000', pos);
+        } else if (data.name || data.id) {
+          addIconifySvgToCanvas(canvas, data.id || data.name, data.color || '#000000');
+        }
+      } else if (data.type === 'icon' && data.svgPath) {
+        addSvgIconPath(canvas, data.svgPath, data.color || '#000000', pos, data.strokeWidth || 2);
+      } else if (data.type === 'image' && data.url) {
+        addImageFromUrl(canvas, data.url, pos);
+      } else if (data.type === 'shape') {
+        if (data.shapeName === 'Rectangle') addRectangle(canvas, data.isHollow ? 'transparent' : (data.color || '#8b3dff'), data.isHollow, '#00c4cc', 3, pos);
+        else if (data.shapeName === 'Circle') addCircle(canvas, data.isHollow ? 'transparent' : (data.color || '#00c4cc'), data.isHollow, '#00c4cc', 3, pos);
+        else if (data.shapeName === 'Triangle') addTriangle(canvas, data.isHollow ? 'transparent' : (data.color || '#f59e0b'), data.isHollow, '#f59e0b', 3, pos);
+        else if (data.shapeName === 'Star') addStar(canvas, data.isHollow ? 'transparent' : (data.color || '#ec4899'), data.isHollow, '#ec4899', 3, pos);
+        else if (data.shapeName === 'Hexagon') addHexagon(canvas, data.isHollow ? 'transparent' : (data.color || '#3b82f6'), data.isHollow, '#3b82f6', 3, pos);
+        else if (data.shapeName === 'Diamond') addDiamond(canvas, data.isHollow ? 'transparent' : (data.color || '#10b981'), data.isHollow, '#10b981', 3, pos);
+        else if (data.shapeName === 'Heart') addHeart(canvas, data.isHollow ? 'transparent' : (data.color || '#ef4444'), data.isHollow, '#ef4444', 3, pos);
+        else if (data.shapeName === 'Pill Capsule') addPillShape(canvas, data.isHollow ? 'transparent' : (data.color || '#6366f1'), data.isHollow, '#6366f1', 3, pos);
+        else addRectangle(canvas, '#8b3dff', false, '#00c4cc', 3, pos);
       }
     } catch (err) {
-      console.error('Failed to parse dropped icon:', err);
+      console.error('Failed to parse dropped element:', err);
     }
   };
 

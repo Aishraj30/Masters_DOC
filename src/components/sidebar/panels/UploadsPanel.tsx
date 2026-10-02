@@ -374,8 +374,18 @@ export const UploadsPanel: React.FC<UploadsPanelProps> = ({ canvas, currentUser 
             {mediaList.map((item, idx) => (
               <div
                 key={item.id || idx}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData(
+                    'application/json',
+                    JSON.stringify({
+                      type: 'image',
+                      url: item.url,
+                    })
+                  );
+                }}
                 onClick={() => addImageFromUrl(canvas, item.url)}
-                className="group relative h-28 rounded-xl overflow-hidden border border-canva-border hover:border-canva-purple cursor-pointer shadow-md transition-all transform hover:scale-[1.02]"
+                className="group relative h-28 rounded-xl overflow-hidden border border-canva-border hover:border-canva-purple cursor-grab active:cursor-grabbing shadow-md transition-all transform hover:scale-[1.02]"
               >
                 <img
                   src={item.url}

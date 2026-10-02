@@ -41,7 +41,10 @@ import {
   deleteActiveObject,
   groupSelectedObjects,
   ungroupSelectedObject,
-  distributeObjects
+  distributeObjects,
+  recolorObject,
+  applyStrokeWidthToObject,
+  toggleHollowObject
 } from '../../utils/fabricHelpers';
 
 interface ContextualToolbarProps {
@@ -75,21 +78,18 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
   // Fill Color
   const handleColorChange = (color: string) => {
     if (!activeObj) return;
-    activeObj.set('fill', color);
-    canvas.requestRenderAll();
+    recolorObject(canvas, activeObj, 'fill', color);
   };
 
   // Stroke Color & Width
   const handleStrokeColorChange = (color: string) => {
     if (!activeObj) return;
-    activeObj.set('stroke', color);
-    canvas.requestRenderAll();
+    recolorObject(canvas, activeObj, 'stroke', color);
   };
 
   const handleStrokeWidthChange = (width: number) => {
     if (!activeObj) return;
-    activeObj.set('strokeWidth', width);
-    canvas.requestRenderAll();
+    applyStrokeWidthToObject(canvas, activeObj, width);
   };
 
   // Font family & size
@@ -195,18 +195,7 @@ export const ContextualToolbar: React.FC<ContextualToolbarProps> = ({ canvas, se
           />
           <button
             onClick={() => {
-              if (!activeObj) return;
-              const isHollow = activeObj.fill === 'transparent' || activeObj.fill === 'none' || activeObj.fill === '';
-              if (isHollow) {
-                activeObj.set({ fill: '#8b3dff' });
-              } else {
-                activeObj.set({ 
-                  fill: 'transparent',
-                  stroke: activeObj.stroke || '#00c4cc',
-                  strokeWidth: activeObj.strokeWidth || 3
-                });
-              }
-              canvas.requestRenderAll();
+              toggleHollowObject(canvas, activeObj);
             }}
             className={`px-2 py-0.5 text-[10px] font-semibold rounded border transition-colors ${
               selectedObject.fill === 'transparent' || selectedObject.fill === 'none' || selectedObject.fill === ''

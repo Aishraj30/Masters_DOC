@@ -1,4 +1,6 @@
+import React from 'react';
 import { fabric } from 'fabric';
+import { BUILTIN_ICONS } from '../constants/iconLibrary';
 
 /**
  * Calculates a responsive default size for newly added elements based on canvas resolution.
@@ -83,14 +85,17 @@ export const addRectangle = (
   color: string = '#8b3dff', 
   isHollow: boolean = false, 
   strokeColor: string = '#00c4cc', 
-  strokeWidth: number = 3
+  strokeWidth: number = 3,
+  position?: { x: number; y: number }
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const size = getResponsiveElementSize(canvas, 150, 0.18);
+  const posX = position ? position.x : center.left - size / 2;
+  const posY = position ? position.y : center.top - size / 2;
   const rect = new fabric.Rect({
-    left: center.left - size / 2,
-    top: center.top - size / 2,
+    left: posX,
+    top: posY,
     width: size,
     height: size,
     fill: isHollow ? 'transparent' : color,
@@ -110,14 +115,17 @@ export const addCircle = (
   color: string = '#00c4cc', 
   isHollow: boolean = false, 
   strokeColor: string = '#00c4cc', 
-  strokeWidth: number = 3
+  strokeWidth: number = 3,
+  position?: { x: number; y: number }
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
   const size = getResponsiveElementSize(canvas, 150, 0.18);
+  const posX = position ? position.x : center.left - size / 2;
+  const posY = position ? position.y : center.top - size / 2;
   const circle = new fabric.Circle({
-    left: center.left - size / 2,
-    top: center.top - size / 2,
+    left: posX,
+    top: posY,
     radius: size / 2,
     fill: isHollow ? 'transparent' : color,
     stroke: strokeColor,
@@ -134,13 +142,16 @@ export const addTriangle = (
   color: string = '#f59e0b', 
   isHollow: boolean = false, 
   strokeColor: string = '#f59e0b', 
-  strokeWidth: number = 3
+  strokeWidth: number = 3,
+  position?: { x: number; y: number }
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const posX = position ? position.x : center.left - 75;
+  const posY = position ? position.y : center.top - 75;
   const triangle = new fabric.Triangle({
-    left: center.left - 75,
-    top: center.top - 75,
+    left: posX,
+    top: posY,
     width: 150,
     height: 150,
     fill: isHollow ? 'transparent' : color,
@@ -158,10 +169,13 @@ export const addStar = (
   color: string = '#ec4899', 
   isHollow: boolean = false, 
   strokeColor: string = '#ec4899', 
-  strokeWidth: number = 3
+  strokeWidth: number = 3,
+  position?: { x: number; y: number }
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const posX = position ? position.x : center.left - 75;
+  const posY = position ? position.y : center.top - 75;
   const points = [
     { x: 75, y: 0 },
     { x: 95, y: 55 },
@@ -175,8 +189,8 @@ export const addStar = (
     { x: 55, y: 55 },
   ];
   const star = new fabric.Polygon(points, {
-    left: center.left - 75,
-    top: center.top - 75,
+    left: posX,
+    top: posY,
     fill: isHollow ? 'transparent' : color,
     stroke: strokeColor,
     strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
@@ -192,10 +206,13 @@ export const addHexagon = (
   color: string = '#3b82f6', 
   isHollow: boolean = false, 
   strokeColor: string = '#3b82f6', 
-  strokeWidth: number = 3
+  strokeWidth: number = 3,
+  position?: { x: number; y: number }
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const posX = position ? position.x : center.left - 100;
+  const posY = position ? position.y : center.top - 86;
   const points = [
     { x: 50, y: 0 },
     { x: 150, y: 0 },
@@ -205,8 +222,8 @@ export const addHexagon = (
     { x: 0, y: 86 },
   ];
   const hex = new fabric.Polygon(points, {
-    left: center.left - 100,
-    top: center.top - 86,
+    left: posX,
+    top: posY,
     fill: isHollow ? 'transparent' : color,
     stroke: strokeColor,
     strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
@@ -222,10 +239,13 @@ export const addDiamond = (
   color: string = '#10b981', 
   isHollow: boolean = false, 
   strokeColor: string = '#10b981', 
-  strokeWidth: number = 3
+  strokeWidth: number = 3,
+  position?: { x: number; y: number }
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const posX = position ? position.x : center.left - 75;
+  const posY = position ? position.y : center.top - 75;
   const points = [
     { x: 75, y: 0 },
     { x: 150, y: 75 },
@@ -233,8 +253,8 @@ export const addDiamond = (
     { x: 0, y: 75 },
   ];
   const diamond = new fabric.Polygon(points, {
-    left: center.left - 75,
-    top: center.top - 75,
+    left: posX,
+    top: posY,
     fill: isHollow ? 'transparent' : color,
     stroke: strokeColor,
     strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
@@ -250,14 +270,17 @@ export const addHeart = (
   color: string = '#ef4444', 
   isHollow: boolean = false, 
   strokeColor: string = '#ef4444', 
-  strokeWidth: number = 3
+  strokeWidth: number = 3,
+  position?: { x: number; y: number }
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const posX = position ? position.x : center.left - 60;
+  const posY = position ? position.y : center.top - 60;
   const heartPath = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
   const path = new fabric.Path(heartPath, {
-    left: center.left - 60,
-    top: center.top - 60,
+    left: posX,
+    top: posY,
     fill: isHollow ? 'transparent' : color,
     stroke: strokeColor,
     strokeWidth: isHollow ? (strokeWidth || 3) : strokeWidth,
@@ -494,13 +517,16 @@ export const addPillShape = (
   color: string = '#6366f1', 
   isHollow: boolean = false, 
   strokeColor: string = '#6366f1', 
-  strokeWidth: number = 3
+  strokeWidth: number = 3,
+  position?: { x: number; y: number }
 ) => {
   if (!canvas) return;
   const center = canvas.getCenter();
+  const posX = position ? position.x : center.left - 90;
+  const posY = position ? position.y : center.top - 35;
   const pill = new fabric.Rect({
-    left: center.left - 90,
-    top: center.top - 35,
+    left: posX,
+    top: posY,
     width: 180,
     height: 70,
     rx: 35,
@@ -610,7 +636,7 @@ export const addBentConnectorArrow = (
   const arrow = new fabric.Path(pathString, {
     left: center.left - initialWidth / 2,
     top: center.top - initialHeight / 2,
-    fill: '',
+    fill: 'transparent',
     stroke: color,
     strokeWidth: 3,
     strokeUniform: true,
@@ -694,7 +720,7 @@ export const addFlowchartDatabase = (canvas: fabric.Canvas, color: string = '#8b
 export const addSvgIconPath = (
   canvas: fabric.Canvas,
   pathData: string,
-  color: string = '#000000',
+  color: string = '#00c4cc',
   position?: { x: number; y: number },
   strokeWidth: number = 2
 ) => {
@@ -704,11 +730,13 @@ export const addSvgIconPath = (
   const posX = position ? position.x : center.left - iconSize / 2;
   const posY = position ? position.y : center.top - iconSize / 2;
 
+  const strokeColor = color && color !== '#000000' ? color : '#00c4cc';
+
   const path = new fabric.Path(pathData, {
     left: posX,
     top: posY,
-    fill: '',
-    stroke: color,
+    fill: 'transparent',
+    stroke: strokeColor,
     strokeWidth: strokeWidth,
     strokeUniform: true,
     strokeLineCap: 'round',
@@ -720,7 +748,11 @@ export const addSvgIconPath = (
   canvas.requestRenderAll();
 };
 
-export const addImageFromUrl = (canvas: fabric.Canvas, url: string) => {
+export const addImageFromUrl = (
+  canvas: fabric.Canvas, 
+  url: string,
+  position?: { x: number; y: number }
+) => {
   if (!canvas) return;
   fabric.Image.fromURL(url, (img) => {
     const maxDim = Math.min((canvas.width || 800) * 0.6, (canvas.height || 800) * 0.6);
@@ -728,9 +760,11 @@ export const addImageFromUrl = (canvas: fabric.Canvas, url: string) => {
       img.scaleToWidth(maxDim);
     }
     const center = canvas.getCenter();
+    const posX = position ? position.x : center.left - ((img.width || 300) * (img.scaleX || 1)) / 2;
+    const posY = position ? position.y : center.top - ((img.height || 300) * (img.scaleY || 1)) / 2;
     img.set({
-      left: center.left - ((img.width || 300) * (img.scaleX || 1)) / 2,
-      top: center.top - ((img.height || 300) * (img.scaleY || 1)) / 2,
+      left: posX,
+      top: posY,
     });
     canvas.add(img);
     canvas.setActiveObject(img);
@@ -912,4 +946,213 @@ export const toggleLock = (canvas: fabric.Canvas) => {
     });
     canvas.requestRenderAll();
   }
+};
+
+export const addIconifySvgToCanvas = async (
+  canvas: fabric.Canvas,
+  iconName: string,
+  color: string = '#000000',
+  fallbackSvgPath?: string
+) => {
+  if (!canvas) return;
+
+  const cleanId = iconName.includes(':') ? iconName.split(':')[1] : iconName;
+  const builtin = BUILTIN_ICONS.find(
+    (b) => b.id === cleanId || b.id === iconName || b.tags.includes(cleanId)
+  );
+  const targetSvgPath = fallbackSvgPath || builtin?.svgPath;
+
+  const tryAddFallback = () => {
+    if (targetSvgPath) {
+      addSvgIconPath(canvas, targetSvgPath, color);
+      return true;
+    }
+    const defaultRect = 'M4 4h16v16H4z M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z';
+    addSvgIconPath(canvas, defaultRect, color);
+    return true;
+  };
+
+  try {
+    const formattedPath = iconName.includes(':') ? iconName.replace(':', '/') : iconName;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+    const iconUrl = `https://api.iconify.design/${formattedPath}.svg?color=${encodeURIComponent(
+      color === '#000000' ? '#000000' : color
+    )}`;
+
+    const res = await fetch(iconUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      tryAddFallback();
+      return;
+    }
+
+    const svgText = await res.text();
+    if (!svgText || !svgText.includes('<svg')) {
+      tryAddFallback();
+      return;
+    }
+
+    fabric.loadSVGFromString(svgText, (objects, options) => {
+      if (!objects || objects.length === 0) {
+        tryAddFallback();
+        return;
+      }
+      const group = fabric.util.groupSVGElements(objects, options);
+      const center = canvas.getCenter();
+      const targetSize = getResponsiveElementSize(canvas, 100, 0.14);
+
+      group.set({
+        left: center.left - targetSize / 2,
+        top: center.top - targetSize / 2,
+      });
+      group.scaleToWidth(targetSize);
+
+      canvas.add(group);
+      canvas.setActiveObject(group);
+      canvas.requestRenderAll();
+    });
+  } catch (err) {
+    console.warn('Network error loading Iconify SVG, using vector fallback:', err);
+    tryAddFallback();
+  }
+};
+
+export const addLucideIconToCanvas = (
+  canvas: fabric.Canvas,
+  IconComponent: React.ComponentType<any>,
+  color: string = '#000000',
+  position?: { x: number; y: number }
+) => {
+  if (!canvas || !IconComponent) return;
+
+  try {
+    const ReactDOMServer = require('react-dom/server');
+    const svgString = ReactDOMServer.renderToStaticMarkup(
+      React.createElement(IconComponent, { color: color || '#000000', size: 48, strokeWidth: 2 })
+    );
+
+    fabric.loadSVGFromString(svgString, (objects, options) => {
+      if (!objects || objects.length === 0) return;
+      objects.forEach((obj) => {
+        obj.set('strokeUniform', true);
+      });
+      const group = fabric.util.groupSVGElements(objects, options);
+      const center = canvas.getCenter();
+      const targetSize = getResponsiveElementSize(canvas, 100, 0.14);
+
+      const posX = position ? position.x : center.left - targetSize / 2;
+      const posY = position ? position.y : center.top - targetSize / 2;
+
+      group.set({
+        left: posX,
+        top: posY,
+      });
+      group.scaleToWidth(targetSize);
+
+      canvas.add(group);
+      canvas.setActiveObject(group);
+      canvas.requestRenderAll();
+    });
+  } catch (err) {
+    console.error('Failed to add Lucide icon to canvas:', err);
+  }
+};
+
+export const recolorObject = (
+  canvas: fabric.Canvas,
+  activeObj: fabric.Object | null,
+  property: 'fill' | 'stroke',
+  color: string
+) => {
+  if (!activeObj || !canvas) return;
+
+  const applyRecursive = (obj: fabric.Object) => {
+    obj.dirty = true;
+    if (obj.type === 'group' || obj.type === 'activeSelection') {
+      (obj as fabric.Group).getObjects().forEach(applyRecursive);
+    } else {
+      if (property === 'fill') {
+        const isHollowPath = obj.fill === 'transparent' || obj.fill === 'none' || obj.fill === '' || !obj.fill;
+        if (isHollowPath && obj.stroke && obj.stroke !== 'none' && obj.stroke !== 'transparent') {
+          obj.set('stroke', color);
+        } else {
+          obj.set('fill', color);
+        }
+      } else if (property === 'stroke') {
+        obj.set('stroke', color);
+        if (!obj.strokeWidth || obj.strokeWidth === 0) {
+          obj.set('strokeWidth', 2);
+        }
+      }
+    }
+  };
+
+  applyRecursive(activeObj);
+  activeObj.set(property === 'fill' ? 'fill' : 'stroke', color);
+  activeObj.dirty = true;
+  canvas.requestRenderAll();
+};
+
+export const applyStrokeWidthToObject = (
+  canvas: fabric.Canvas,
+  activeObj: fabric.Object | null,
+  width: number
+) => {
+  if (!activeObj || !canvas) return;
+
+  const applyRecursive = (obj: fabric.Object) => {
+    obj.dirty = true;
+    if (obj.type === 'group' || obj.type === 'activeSelection') {
+      (obj as fabric.Group).getObjects().forEach(applyRecursive);
+    } else {
+      obj.set('strokeWidth', width);
+    }
+  };
+
+  applyRecursive(activeObj);
+  activeObj.set('strokeWidth', width);
+  activeObj.dirty = true;
+  canvas.requestRenderAll();
+};
+
+export const toggleHollowObject = (
+  canvas: fabric.Canvas,
+  activeObj: fabric.Object | null,
+  targetColor: string = '#8b3dff'
+) => {
+  if (!activeObj || !canvas) return;
+
+  const checkIsHollow = (obj: fabric.Object): boolean => {
+    if (obj.type === 'group' || obj.type === 'activeSelection') {
+      const children = (obj as fabric.Group).getObjects();
+      return children.length > 0 ? children.every(checkIsHollow) : true;
+    }
+    return obj.fill === 'transparent' || obj.fill === 'none' || obj.fill === '' || !obj.fill;
+  };
+
+  const currentlyHollow = checkIsHollow(activeObj);
+
+  const applyToggle = (obj: fabric.Object) => {
+    obj.dirty = true;
+    if (obj.type === 'group' || obj.type === 'activeSelection') {
+      (obj as fabric.Group).getObjects().forEach(applyToggle);
+    } else {
+      if (currentlyHollow) {
+        obj.set({ fill: targetColor });
+      } else {
+        obj.set({
+          fill: 'transparent',
+          stroke: obj.stroke && obj.stroke !== 'none' && obj.stroke !== 'transparent' ? obj.stroke : '#00c4cc',
+          strokeWidth: obj.strokeWidth || 3,
+        });
+      }
+    }
+  };
+
+  applyToggle(activeObj);
+  activeObj.dirty = true;
+  canvas.requestRenderAll();
 };

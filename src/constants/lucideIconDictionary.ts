@@ -1,0 +1,135 @@
+import React from 'react';
+import * as LucideIcons from 'lucide-react';
+
+export interface IconItem {
+  id: string;
+  name: string;
+  category: string;
+  tags: string[];
+  icon: React.ComponentType<any>;
+}
+
+export const ICON_DICTIONARY: IconItem[] = [
+  // Arrows
+  { id: 'arrow-right', name: 'Arrow Right', category: 'Arrows', tags: ['arrow', 'right', 'next', 'forward'], icon: LucideIcons.ArrowRight },
+  { id: 'arrow-left', name: 'Arrow Left', category: 'Arrows', tags: ['arrow', 'left', 'back', 'previous'], icon: LucideIcons.ArrowLeft },
+  { id: 'arrow-up', name: 'Arrow Up', category: 'Arrows', tags: ['arrow', 'up', 'top'], icon: LucideIcons.ArrowUp },
+  { id: 'arrow-down', name: 'Arrow Down', category: 'Arrows', tags: ['arrow', 'down', 'bottom'], icon: LucideIcons.ArrowDown },
+  { id: 'arrow-up-right', name: 'Arrow Up Right', category: 'Arrows', tags: ['arrow', 'diagonal', 'external'], icon: LucideIcons.ArrowUpRight },
+  { id: 'arrow-down-right', name: 'Arrow Down Right', category: 'Arrows', tags: ['arrow', 'diagonal'], icon: LucideIcons.ArrowDownRight },
+  { id: 'chevron-right', name: 'Chevron Right', category: 'Arrows', tags: ['arrow', 'chevron', 'right'], icon: LucideIcons.ChevronRight },
+  { id: 'chevron-left', name: 'Chevron Left', category: 'Arrows', tags: ['arrow', 'chevron', 'left'], icon: LucideIcons.ChevronLeft },
+  { id: 'chevron-down', name: 'Chevron Down', category: 'Arrows', tags: ['arrow', 'chevron', 'down'], icon: LucideIcons.ChevronDown },
+  { id: 'chevron-up', name: 'Chevron Up', category: 'Arrows', tags: ['arrow', 'chevron', 'up'], icon: LucideIcons.ChevronUp },
+  { id: 'chevrons-right', name: 'Chevrons Right', category: 'Arrows', tags: ['arrow', 'double', 'fast'], icon: LucideIcons.ChevronsRight },
+  { id: 'chevrons-left', name: 'Chevrons Left', category: 'Arrows', tags: ['arrow', 'double', 'rewind'], icon: LucideIcons.ChevronsLeft },
+  { id: 'move-right', name: 'Move Right', category: 'Arrows', tags: ['arrow', 'move', 'right'], icon: LucideIcons.MoveRight },
+  { id: 'move-left', name: 'Move Left', category: 'Arrows', tags: ['arrow', 'move', 'left'], icon: LucideIcons.MoveLeft },
+  { id: 'trending-up', name: 'Trending Up', category: 'Arrows', tags: ['arrow', 'growth', 'trending', 'up'], icon: LucideIcons.TrendingUp },
+  { id: 'trending-down', name: 'Trending Down', category: 'Arrows', tags: ['arrow', 'loss', 'trending', 'down'], icon: LucideIcons.TrendingDown },
+  { id: 'refresh-cw', name: 'Refresh', category: 'Arrows', tags: ['refresh', 'sync', 'rotate', 'reload', 'arrows'], icon: LucideIcons.RefreshCw },
+  { id: 'rotate-cw', name: 'Rotate CW', category: 'Arrows', tags: ['rotate', 'redo', 'cw'], icon: LucideIcons.RotateCw },
+
+  // Interface & Essential
+  { id: 'home', name: 'Home', category: 'Interface', tags: ['home', 'house', 'main'], icon: LucideIcons.Home },
+  { id: 'search', name: 'Search', category: 'Interface', tags: ['search', 'find', 'lookup', 'magnifier'], icon: LucideIcons.Search },
+  { id: 'settings', name: 'Settings', category: 'Interface', tags: ['settings', 'gear', 'options', 'config'], icon: LucideIcons.Settings },
+  { id: 'filter', name: 'Filter', category: 'Interface', tags: ['filter', 'funnel', 'sort'], icon: LucideIcons.Filter },
+  { id: 'sliders', name: 'Sliders', category: 'Interface', tags: ['sliders', 'adjust', 'controls'], icon: LucideIcons.Sliders },
+  { id: 'check', name: 'Check', category: 'Interface', tags: ['check', 'done', 'tick', 'accept', 'ok'], icon: LucideIcons.Check },
+  { id: 'check-circle', name: 'Check Circle', category: 'Interface', tags: ['check', 'success', 'done'], icon: LucideIcons.CheckCircle2 },
+  { id: 'x', name: 'Close', category: 'Interface', tags: ['x', 'close', 'cancel', 'cross'], icon: LucideIcons.X },
+  { id: 'x-circle', name: 'Close Circle', category: 'Interface', tags: ['x', 'cancel', 'error'], icon: LucideIcons.XCircle },
+  { id: 'plus', name: 'Plus', category: 'Interface', tags: ['plus', 'add', 'create', 'new'], icon: LucideIcons.Plus },
+  { id: 'plus-circle', name: 'Plus Circle', category: 'Interface', tags: ['plus', 'add', 'create'], icon: LucideIcons.PlusCircle },
+  { id: 'minus', name: 'Minus', category: 'Interface', tags: ['minus', 'remove', 'subtract'], icon: LucideIcons.Minus },
+  { id: 'trash-2', name: 'Trash', category: 'Interface', tags: ['trash', 'delete', 'remove', 'bin'], icon: LucideIcons.Trash2 },
+  { id: 'edit-3', name: 'Edit', category: 'Interface', tags: ['edit', 'pencil', 'write'], icon: LucideIcons.Edit3 },
+  { id: 'copy', name: 'Copy', category: 'Interface', tags: ['copy', 'duplicate', 'clone'], icon: LucideIcons.Copy },
+  { id: 'share-2', name: 'Share', category: 'Interface', tags: ['share', 'social', 'send'], icon: LucideIcons.Share2 },
+  { id: 'download', name: 'Download', category: 'Interface', tags: ['download', 'save', 'get'], icon: LucideIcons.Download },
+  { id: 'upload-cloud', name: 'Upload', category: 'Interface', tags: ['upload', 'cloud', 'send'], icon: LucideIcons.UploadCloud },
+  { id: 'lock', name: 'Lock', category: 'Interface', tags: ['lock', 'security', 'privacy', 'password'], icon: LucideIcons.Lock },
+  { id: 'unlock', name: 'Unlock', category: 'Interface', tags: ['unlock', 'open', 'security'], icon: LucideIcons.Unlock },
+  { id: 'shield', name: 'Shield', category: 'Interface', tags: ['shield', 'security', 'protection'], icon: LucideIcons.Shield },
+  { id: 'eye', name: 'Eye', category: 'Interface', tags: ['eye', 'view', 'show', 'preview'], icon: LucideIcons.Eye },
+  { id: 'eye-off', name: 'Eye Off', category: 'Interface', tags: ['eye', 'hide', 'hidden', 'private'], icon: LucideIcons.EyeOff },
+  { id: 'heart', name: 'Heart', category: 'Interface', tags: ['heart', 'like', 'love', 'favorite'], icon: LucideIcons.Heart },
+  { id: 'star', name: 'Star', category: 'Interface', tags: ['star', 'rating', 'favorite', 'bookmark'], icon: LucideIcons.Star },
+
+  // Brands & Tech & Devices
+  { id: 'github', name: 'GitHub', category: 'Brands', tags: ['github', 'brand', 'code', 'git'], icon: LucideIcons.Github },
+  { id: 'twitter', name: 'Twitter', category: 'Brands', tags: ['twitter', 'brand', 'social'], icon: LucideIcons.Twitter },
+  { id: 'facebook', name: 'Facebook', category: 'Brands', tags: ['facebook', 'brand', 'social'], icon: LucideIcons.Facebook },
+  { id: 'instagram', name: 'Instagram', category: 'Brands', tags: ['instagram', 'brand', 'social'], icon: LucideIcons.Instagram },
+  { id: 'linkedin', name: 'LinkedIn', category: 'Brands', tags: ['linkedin', 'brand', 'social', 'jobs'], icon: LucideIcons.Linkedin },
+  { id: 'youtube', name: 'YouTube', category: 'Brands', tags: ['youtube', 'brand', 'video'], icon: LucideIcons.Youtube },
+  { id: 'figma', name: 'Figma', category: 'Brands', tags: ['figma', 'brand', 'design'], icon: LucideIcons.Figma },
+  { id: 'chrome', name: 'Chrome', category: 'Brands', tags: ['chrome', 'brand', 'browser'], icon: LucideIcons.Chrome },
+  { id: 'command', name: 'Command', category: 'Brands', tags: ['command', 'apple', 'mac', 'key'], icon: LucideIcons.Command },
+  { id: 'terminal', name: 'Terminal', category: 'Brands', tags: ['terminal', 'cli', 'console', 'cmd'], icon: LucideIcons.Terminal },
+  { id: 'cpu', name: 'CPU / Processor', category: 'Brands', tags: ['cpu', 'processor', 'hardware', 'chip', 'device'], icon: LucideIcons.Cpu },
+  { id: 'database', name: 'Database', category: 'Brands', tags: ['database', 'storage', 'sql', 'data'], icon: LucideIcons.Database },
+  { id: 'server', name: 'Server', category: 'Brands', tags: ['server', 'cloud', 'hosting', 'device'], icon: LucideIcons.Server },
+  { id: 'code-2', name: 'Code', category: 'Brands', tags: ['code', 'developer', 'script', 'html'], icon: LucideIcons.Code2 },
+  { id: 'cloud', name: 'Cloud', category: 'Brands', tags: ['cloud', 'storage', 'weather'], icon: LucideIcons.Cloud },
+  { id: 'globe', name: 'Globe', category: 'Brands', tags: ['globe', 'world', 'internet', 'web'], icon: LucideIcons.Globe },
+  { id: 'laptop', name: 'Laptop / Device', category: 'Brands', tags: ['laptop', 'device', 'computer', 'screen'], icon: LucideIcons.Laptop },
+  { id: 'monitor', name: 'Monitor / Display', category: 'Brands', tags: ['monitor', 'device', 'screen', 'display', 'tv'], icon: LucideIcons.Monitor },
+  { id: 'smartphone', name: 'Smartphone / Device', category: 'Brands', tags: ['smartphone', 'device', 'phone', 'mobile'], icon: LucideIcons.Smartphone },
+  { id: 'tablet', name: 'Tablet / Device', category: 'Brands', tags: ['tablet', 'device', 'pad', 'screen'], icon: LucideIcons.Tablet },
+  { id: 'hard-drive', name: 'Hard Drive', category: 'Brands', tags: ['hard-drive', 'storage', 'device', 'disk'], icon: LucideIcons.HardDrive },
+  { id: 'tv', name: 'TV / Display', category: 'Brands', tags: ['tv', 'device', 'screen', 'television'], icon: LucideIcons.Tv },
+
+  // Media
+  { id: 'play', name: 'Play', category: 'Media', tags: ['play', 'video', 'music', 'start'], icon: LucideIcons.Play },
+  { id: 'pause', name: 'Pause', category: 'Media', tags: ['pause', 'hold', 'wait'], icon: LucideIcons.Pause },
+  { id: 'volume-2', name: 'Volume High', category: 'Media', tags: ['volume', 'audio', 'sound', 'speaker'], icon: LucideIcons.Volume2 },
+  { id: 'volume-x', name: 'Volume Mute', category: 'Media', tags: ['volume', 'mute', 'silent', 'sound'], icon: LucideIcons.VolumeX },
+  { id: 'music', name: 'Music', category: 'Media', tags: ['music', 'audio', 'song', 'note'], icon: LucideIcons.Music },
+  { id: 'video', name: 'Video', category: 'Media', tags: ['video', 'camera', 'movie', 'film'], icon: LucideIcons.Video },
+  { id: 'image', name: 'Image', category: 'Media', tags: ['image', 'photo', 'picture', 'gallery'], icon: LucideIcons.Image },
+  { id: 'camera', name: 'Camera', category: 'Media', tags: ['camera', 'photo', 'picture'], icon: LucideIcons.Camera },
+  { id: 'film', name: 'Film', category: 'Media', tags: ['film', 'movie', 'video'], icon: LucideIcons.Film },
+  { id: 'mic', name: 'Microphone', category: 'Media', tags: ['mic', 'audio', 'voice', 'record'], icon: LucideIcons.Mic },
+  { id: 'radio', name: 'Radio', category: 'Media', tags: ['radio', 'signal', 'broadcast'], icon: LucideIcons.Radio },
+  { id: 'headphones', name: 'Headphones', category: 'Media', tags: ['headphones', 'audio', 'music', 'sound'], icon: LucideIcons.Headphones },
+
+  // Users
+  { id: 'user', name: 'User Profile', category: 'Users', tags: ['user', 'profile', 'person', 'account'], icon: LucideIcons.User },
+  { id: 'user-plus', name: 'User Add', category: 'Users', tags: ['user', 'add', 'invite', 'plus'], icon: LucideIcons.UserPlus },
+  { id: 'user-check', name: 'User Checked', category: 'Users', tags: ['user', 'verify', 'approved'], icon: LucideIcons.UserCheck },
+  { id: 'user-x', name: 'User Remove', category: 'Users', tags: ['user', 'remove', 'delete', 'block'], icon: LucideIcons.UserX },
+  { id: 'users', name: 'Users Group', category: 'Users', tags: ['users', 'team', 'group', 'people'], icon: LucideIcons.Users },
+  { id: 'smile', name: 'Smile', category: 'Users', tags: ['smile', 'happy', 'emoji', 'face'], icon: LucideIcons.Smile },
+
+  // Objects
+  { id: 'shopping-bag', name: 'Shopping Bag', category: 'Objects', tags: ['shopping', 'bag', 'store', 'buy'], icon: LucideIcons.ShoppingBag },
+  { id: 'shopping-cart', name: 'Shopping Cart', category: 'Objects', tags: ['shopping', 'cart', 'store', 'buy'], icon: LucideIcons.ShoppingCart },
+  { id: 'package', name: 'Package', category: 'Objects', tags: ['package', 'box', 'delivery', 'shipment'], icon: LucideIcons.Package },
+  { id: 'folder', name: 'Folder', category: 'Objects', tags: ['folder', 'directory', 'files'], icon: LucideIcons.Folder },
+  { id: 'folder-plus', name: 'Folder Add', category: 'Objects', tags: ['folder', 'new', 'create'], icon: LucideIcons.FolderPlus },
+  { id: 'file-text', name: 'Document', category: 'Objects', tags: ['file', 'doc', 'text', 'paper'], icon: LucideIcons.FileText },
+  { id: 'calendar', name: 'Calendar', category: 'Objects', tags: ['calendar', 'date', 'event', 'schedule'], icon: LucideIcons.Calendar },
+  { id: 'clock', name: 'Clock', category: 'Objects', tags: ['clock', 'time', 'timer', 'watch'], icon: LucideIcons.Clock },
+  { id: 'key', name: 'Key', category: 'Objects', tags: ['key', 'password', 'access', 'security'], icon: LucideIcons.Key },
+  { id: 'compass', name: 'Compass', category: 'Objects', tags: ['compass', 'navigation', 'direction'], icon: LucideIcons.Compass },
+  { id: 'map-pin', name: 'Map Pin', category: 'Objects', tags: ['map', 'location', 'pin', 'gps', 'marker'], icon: LucideIcons.MapPin },
+  { id: 'bookmark', name: 'Bookmark', category: 'Objects', tags: ['bookmark', 'save', 'ribbon'], icon: LucideIcons.Bookmark },
+  { id: 'tag', name: 'Tag', category: 'Objects', tags: ['tag', 'label', 'price'], icon: LucideIcons.Tag },
+  { id: 'flag', name: 'Flag', category: 'Objects', tags: ['flag', 'mark', 'country', 'goal'], icon: LucideIcons.Flag },
+  { id: 'zap', name: 'Energy Zap', category: 'Objects', tags: ['zap', 'lightning', 'flash', 'power', 'fast'], icon: LucideIcons.Zap },
+  { id: 'sun', name: 'Sun Light', category: 'Objects', tags: ['sun', 'light', 'bright', 'weather'], icon: LucideIcons.Sun },
+  { id: 'moon', name: 'Moon Night', category: 'Objects', tags: ['moon', 'dark', 'night'], icon: LucideIcons.Moon },
+  { id: 'battery', name: 'Battery', category: 'Objects', tags: ['battery', 'power', 'charge'], icon: LucideIcons.Battery },
+  { id: 'wifi', name: 'Wifi Signal', category: 'Objects', tags: ['wifi', 'network', 'wireless', 'internet'], icon: LucideIcons.Wifi },
+
+  // Communication
+  { id: 'message-square', name: 'Chat Box', category: 'Communication', tags: ['message', 'chat', 'comment', 'discussion'], icon: LucideIcons.MessageSquare },
+  { id: 'message-circle', name: 'Chat Circle', category: 'Communication', tags: ['message', 'chat', 'talk', 'speech'], icon: LucideIcons.MessageCircle },
+  { id: 'send', name: 'Send', category: 'Communication', tags: ['send', 'submit', 'mail', 'paper-plane'], icon: LucideIcons.Send },
+  { id: 'phone', name: 'Phone', category: 'Communication', tags: ['phone', 'call', 'contact'], icon: LucideIcons.Phone },
+  { id: 'phone-call', name: 'Phone Call', category: 'Communication', tags: ['phone', 'call', 'incoming', 'outgoing'], icon: LucideIcons.PhoneCall },
+  { id: 'at-sign', name: 'At Email', category: 'Communication', tags: ['at', 'email', 'mention'], icon: LucideIcons.AtSign },
+  { id: 'mail', name: 'Envelope Mail', category: 'Communication', tags: ['mail', 'email', 'inbox'], icon: LucideIcons.Mail },
+];

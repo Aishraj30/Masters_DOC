@@ -7,8 +7,8 @@ import {
   Palette, 
   Layers, 
   Sparkles, 
-  Heart, 
-  QrCode, 
+  Network, 
+  Heart,
   Code2, 
   ShieldCheck 
 } from 'lucide-react';
@@ -22,9 +22,9 @@ interface SidebarNavProps {
 export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onTabChange }) => {
   const tabs = [
     { id: 'elements' as ActiveTab, label: 'Elements', icon: Shapes },
+    { id: 'diagram' as ActiveTab, label: 'Diagram', icon: Network },
     { id: 'icons' as ActiveTab, label: 'Icons', icon: Heart },
     { id: 'text' as ActiveTab, label: 'Text', icon: Type },
-    { id: 'qrcode' as ActiveTab, label: 'QR Code', icon: QrCode },
     { id: 'codecard' as ActiveTab, label: 'Code Card', icon: Code2 },
     { id: 'accessibility' as ActiveTab, label: 'WCAG Audit', icon: ShieldCheck },
     { id: 'uploads' as ActiveTab, label: 'Uploads', icon: UploadCloud },

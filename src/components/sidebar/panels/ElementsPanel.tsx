@@ -209,8 +209,19 @@ export const ElementsPanel: React.FC<ElementsPanelProps> = ({ canvas }) => {
               return (
                 <button
                   key={shape.name}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData(
+                      'application/json',
+                      JSON.stringify({
+                        type: 'shape',
+                        shapeName: shape.name,
+                        isHollow: shapeStyle === 'hollow',
+                      })
+                    );
+                  }}
                   onClick={shape.action}
-                  className="flex flex-col items-center justify-center p-3 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all hover:scale-105 group relative"
+                  className="flex flex-col items-center justify-center p-3 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all hover:scale-105 group relative cursor-grab active:cursor-grabbing"
                 >
                   <Icon className={`w-6 h-6 mb-1 transition-colors ${shapeStyle === 'hollow' ? 'text-canva-teal stroke-2 fill-none' : 'text-canva-teal fill-canva-teal/30 group-hover:text-white'}`} />
                   <span className="text-[11px] text-gray-300 font-medium truncate w-full text-center">{shape.name}</span>

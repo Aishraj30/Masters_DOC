@@ -3,25 +3,12 @@ import {
   Search,
   Plus,
   Home as HomeIcon,
-  LayoutTemplate,
-  Monitor,
-  Instagram,
-  Video,
-  FileText,
-  FileSpreadsheet,
-  Globe,
-  Sparkles,
-  Maximize,
-  UploadCloud,
-  MoreHorizontal,
   Crown,
   HelpCircle,
   FolderOpen,
-  Edit3,
   Copy,
   Trash2,
   Clock,
-  ArrowRight,
 } from 'lucide-react';
 import { UserProfile } from '../../utils/auth';
 import { CanvasProject } from '../../types/project';
@@ -110,23 +97,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return `${diffDays}d ago`;
   };
 
-  // Quick Action Preset Buttons matching Image 2
-  const quickActions = [
-    // { id: 'templates', label: 'Templates', icon: LayoutTemplate, color: 'bg-purple-600' },
-    { id: 'presentation', label: 'Presentation', icon: Monitor, color: 'bg-orange-500' },
-    { id: 'instagram-post', label: 'Social media', icon: Instagram, color: 'bg-pink-600' },
-    { id: 'presentation', label: 'Video', icon: Video, color: 'bg-[#8326ee]' },
-    { id: 'a4', label: 'Printables', icon: FileText, color: 'bg-blue-600' },
-    { id: 'a4', label: 'Doc', icon: FileText, color: 'bg-teal-500' },
-    { id: 'presentation', label: 'Whiteboard', icon: Monitor, color: 'bg-emerald-500' },
-    { id: 'a4', label: 'Sheet', icon: FileSpreadsheet, color: 'bg-blue-500' },
-    { id: 'presentation', label: 'Website', icon: Globe, color: 'bg-indigo-600' },
-    { id: 'presentation', label: 'Magic Layers', icon: Sparkles, color: 'bg-gradient-to-r from-purple-500 to-indigo-500' },
-    { id: 'custom', label: 'Custom size', icon: Maximize, color: 'bg-[#2a3447]' },
-    { id: 'custom', label: 'Upload', icon: UploadCloud, color: 'bg-[#2a3447]' },
-    { id: 'custom', label: 'More', icon: MoreHorizontal, color: 'bg-[#2a3447]' },
-  ];
-
   return (
     <div className="flex h-screen w-screen bg-[#0f1420] text-gray-100 overflow-hidden select-none font-sans relative">
       {/* Slim Left Navigation Rail matching Image 2 */}
@@ -182,8 +152,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </button> */}
           </div>
 
-          {/* Large Centered Search Bar matching Image 2 */}
-          <div className="relative w-full max-w-2xl mb-8">
+          {/* Large Centered Search Bar */}
+          <div className="relative w-full max-w-2xl mb-2">
             <Search className="w-5 h-5 text-gray-400 absolute left-4 top-3.5" />
             <input
               type="text"
@@ -192,27 +162,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
               placeholder="Search anything"
               className="w-full bg-white text-gray-900 placeholder-gray-500 rounded-full pl-12 pr-6 py-3 text-sm font-semibold shadow-xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
             />
-          </div>
-
-          {/* Quick Preset Circle Buttons Row matching Image 2 */}
-          <div className="flex items-center space-x-5 overflow-x-auto w-full max-w-5xl justify-start sm:justify-center py-2 px-2 scrollbar-none">
-            {quickActions.map((action, idx) => {
-              const Icon = action.icon;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => handleQuickPresetClick(action.id)}
-                  className="flex flex-col items-center group flex-shrink-0"
-                >
-                  <div className={`w-12 h-12 rounded-full ${action.color} text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                    <Icon className="w-5 h-5 stroke-[2.5]" />
-                  </div>
-                  <span className="text-[11px] font-semibold text-gray-300 mt-2 group-hover:text-white transition-colors">
-                    {action.label}
-                  </span>
-                </button>
-              );
-            })}
           </div>
         </section>
 

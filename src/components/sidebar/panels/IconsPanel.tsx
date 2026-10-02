@@ -1,18 +1,23 @@
 import React, { useState } from 'react';
 import { fabric } from 'fabric';
-import { Search, Shapes, Sparkles, Sliders } from 'lucide-react';
+import { Search, Shapes, Zap, Bot } from 'lucide-react';
 import { SCIENTIFIC_ICONS, ScientificIconCategories, ScientificIcon } from '../../../constants/scientificIcons';
 import { addSvgIconPath } from '../../../utils/fabricHelpers';
+import { PhotoToLineDiagramModal } from '../../modals/PhotoToLineDiagramModal';
+import { GroqAiDiagramModal } from '../../modals/GroqAiDiagramModal';
 
 interface IconsPanelProps {
   canvas: fabric.Canvas | null;
+  title?: string;
 }
 
-export const IconsPanel: React.FC<IconsPanelProps> = ({ canvas }) => {
+export const IconsPanel: React.FC<IconsPanelProps> = ({ canvas, title = 'Line Diagram Library' }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedColor, setSelectedColor] = useState('#000000');
-  const [strokeWidth, setStrokeWidth] = useState<number>(2); // Default 2px stroke width
+  const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
+  const [isGroqModalOpen, setIsGroqModalOpen] = useState(false);
+  const selectedColor = '#000000';
+  const strokeWidth = 2; // Default 2px stroke width
 
   if (!canvas) return null;
 
@@ -48,7 +53,7 @@ export const IconsPanel: React.FC<IconsPanelProps> = ({ canvas }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Shapes className="w-4 h-4 text-canva-teal" />
-            <h2 className="font-bold text-sm text-white">Scientific Icon Library</h2>
+            <h2 className="font-bold text-sm text-white">{title}</h2>
           </div>
           <span className="text-[10px] font-medium bg-canva-teal/20 text-canva-teal px-2 py-0.5 rounded-full">
             {SCIENTIFIC_ICONS.length} Icons
@@ -67,6 +72,25 @@ export const IconsPanel: React.FC<IconsPanelProps> = ({ canvas }) => {
           />
         </div>
 
+        {/* Feature Action Buttons: Photo to Line Diagram & Groq AI Generator */}
+        <div className="space-y-2">
+          <button
+            onClick={() => setIsPhotoModalOpen(true)}
+            className="w-full py-2 px-3 bg-gradient-to-r from-canva-purple to-canva-teal hover:opacity-95 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center space-x-2 group cursor-pointer border border-canva-teal/40"
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform fill-amber-300" />
+            <span>Convert Photo to Line Diagram</span>
+          </button>
+
+          <button
+            onClick={() => setIsGroqModalOpen(true)}
+            className="w-full py-2 px-3 bg-gradient-to-r from-amber-400 to-canva-purple hover:opacity-95 text-black font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center space-x-2 group cursor-pointer border border-amber-400/40"
+          >
+            <Bot className="w-3.5 h-3.5 text-black group-hover:scale-110 transition-transform" />
+            <span>Generate with Groq AI</span>
+          </button>
+        </div>
+
         {/* Categories Bar */}
         <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-canva-border">
           {ScientificIconCategories.map((cat) => (
@@ -82,42 +106,6 @@ export const IconsPanel: React.FC<IconsPanelProps> = ({ canvas }) => {
               {cat}
             </button>
           ))}
-        </div>
-
-        {/* Stroke Color & Stroke Width Controls */}
-        <div className="space-y-2 bg-canva-sidebar p-2.5 rounded-xl border border-canva-border">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] text-gray-400 font-medium flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-canva-teal" /> Stroke Color:
-            </span>
-            <div className="flex items-center space-x-2">
-              <input
-                type="color"
-                value={selectedColor}
-                onChange={(e) => setSelectedColor(e.target.value)}
-                className="w-5 h-5 rounded cursor-pointer border border-canva-border bg-transparent p-0"
-              />
-              <span className="text-[11px] font-mono text-canva-teal uppercase">{selectedColor}</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-1.5 border-t border-canva-border/50">
-            <span className="text-[11px] text-gray-400 font-medium flex items-center gap-1.5">
-              <Sliders className="w-3 h-3 text-canva-purple" /> Line Width:
-            </span>
-            <div className="flex items-center space-x-2">
-              <input
-                type="range"
-                min="1"
-                max="8"
-                step="0.5"
-                value={strokeWidth}
-                onChange={(e) => setStrokeWidth(Number(e.target.value))}
-                className="w-20 h-1 bg-canva-border rounded appearance-none cursor-pointer accent-canva-purple"
-              />
-              <span className="text-[11px] font-mono text-canva-purple font-bold">{strokeWidth}px</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -158,6 +146,18 @@ export const IconsPanel: React.FC<IconsPanelProps> = ({ canvas }) => {
           </div>
         )}
       </div>
+
+      <PhotoToLineDiagramModal
+        isOpen={isPhotoModalOpen}
+        onClose={() => setIsPhotoModalOpen(false)}
+        canvas={canvas}
+      />
+
+      <GroqAiDiagramModal
+        isOpen={isGroqModalOpen}
+        onClose={() => setIsGroqModalOpen(false)}
+        canvas={canvas}
+      />
     </div>
   );
 };

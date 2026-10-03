@@ -29,7 +29,8 @@ export async function connectToDatabase() {
     console.log('🔄 [MongoDB] Initializing database connection...');
     cached!.promise = mongoose
       .connect(mongoUri, {
-        serverSelectionTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 3000,
+        connectTimeoutMS: 3000,
         tls: true,
         tlsAllowInvalidCertificates: true,
       })

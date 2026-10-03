@@ -26,6 +26,7 @@ import {
   DEFAULT_GROQ_TEXT_MODEL
 } from '../../utils/groqService';
 import { addSvgIconPath } from '../../utils/fabricHelpers';
+import { getCurrentUser } from '../../utils/auth';
 
 interface GroqAiDiagramModalProps {
   isOpen: boolean;
@@ -66,12 +67,14 @@ export const GroqAiDiagramModal: React.FC<GroqAiDiagramModalProps> = ({
   // Vision Image State
   const [uploadedImageSrc, setUploadedImageSrc] = useState<string>(SAMPLE_VISION_PHOTOS[0].url);
 
-  // Default Prompt State
+  // Mandatory Unique Title & Prompt State
+  const [diagramTitle, setDiagramTitle] = useState<string>('');
   const [promptText, setPromptText] = useState<string>(DEFAULT_GROQ_VISION_PROMPT);
   const [strokeColor, setStrokeColor] = useState<string>('#00c4cc');
   const [strokeWidth, setStrokeWidth] = useState<number>(2);
 
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [result, setResult] = useState<GroqGenerationResult | null>(null);
 
@@ -132,6 +135,10 @@ export const GroqAiDiagramModal: React.FC<GroqAiDiagramModalProps> = ({
       });
 
       setResult(res);
+      // Auto-suggest title if empty
+      if (!diagramTitle) {
+        setDiagramTitle(`Line Diagram ${Date.now().toString().slice(-4)}`);
+      }
     } catch (err: any) {
       console.error('Groq AI error:', err);
       setErrorMsg(err.message || 'Failed to generate line diagram with Groq AI.');
@@ -140,10 +147,51 @@ export const GroqAiDiagramModal: React.FC<GroqAiDiagramModalProps> = ({
     }
   };
 
-  const handleAddToCanvas = () => {
+  const handleAddToCanvas = async () => {
     if (!canvas || !result || !result.svgPath) return;
-    addSvgIconPath(canvas, result.svgPath, strokeColor, undefined, strokeWidth);
-    onClose();
+
+    if (!diagramTitle || !diagramTitle.trim()) {
+      setErrorMsg('Please enter a unique Diagram Title before adding to canvas & submitting to library.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const currentUser = getCurrentUser();
+      const res = await fetch('/api/diagrams/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: diagramTitle.trim(),
+          svgPath: result.svgPath,
+          strokeColor,
+          strokeWidth,
+          sourcePhotoUrl: mode === 'vision' ? uploadedImageSrc : '',
+          promptUsed: promptText,
+          user: currentUser,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        setErrorMsg(data.message || 'Diagram title must be unique. Please choose another title.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      addSvgIconPath(canvas, result.svgPath, strokeColor, undefined, strokeWidth);
+      setIsSubmitting(false);
+      onClose();
+    } catch (err: any) {
+      console.error('Submit Diagram Error:', err);
+      // Fallback add to canvas if API network error
+      addSvgIconPath(canvas, result.svgPath, strokeColor, undefined, strokeWidth);
+      setIsSubmitting(false);
+      onClose();
+    }
   };
 
   return (
@@ -317,8 +365,26 @@ export const GroqAiDiagramModal: React.FC<GroqAiDiagramModalProps> = ({
               </div>
             )}
 
-            {/* Right Column: Prompt & Live Vector Output Preview (7 cols) */}
+            {/* Right Column: Title, Prompt & Live Vector Output Preview (7 cols) */}
             <div className="md:col-span-7 flex flex-col space-y-3">
+              {/* Mandatory Unique Diagram Title Input */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-amber-400 flex items-center space-x-1.5 uppercase tracking-wider">
+                    <Layers className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Diagram Title (Must be unique):</span>
+                  </label>
+                  <span className="text-[10px] text-gray-400">Required for Admin Queue</span>
+                </div>
+                <input
+                  type="text"
+                  value={diagramTitle}
+                  onChange={(e) => setDiagramTitle(e.target.value)}
+                  placeholder="e.g. Scientific Microscope Vector v1"
+                  className="w-full bg-canva-sidebar border border-canva-border focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium"
+                />
+              </div>
+
               {/* Prompt Text Input Box */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-gray-300 flex items-center space-x-1.5">
@@ -435,11 +501,15 @@ export const GroqAiDiagramModal: React.FC<GroqAiDiagramModalProps> = ({
 
             <button
               onClick={handleAddToCanvas}
-              disabled={!result || !result.svgPath}
+              disabled={!result || !result.svgPath || isSubmitting}
               className="px-6 py-2.5 bg-canva-teal text-black font-bold text-xs rounded-xl shadow-lg hover:bg-canva-teal/90 transition-all flex items-center space-x-2 disabled:opacity-50"
             >
-              <Check className="w-4 h-4" />
-              <span>Add to Canvas</span>
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin text-black" />
+              ) : (
+                <Check className="w-4 h-4" />
+              )}
+              <span>{isSubmitting ? 'Submitting to Admin Queue...' : 'Submit & Add to Canvas'}</span>
             </button>
           </div>
         </div>

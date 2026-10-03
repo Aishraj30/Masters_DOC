@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Palette, Lock, User, Eye, EyeOff, ShieldCheck, AlertCircle, ArrowRight, Mail, Phone, AtSign, Loader2, KeyRound, CheckCircle2, RotateCcw } from 'lucide-react';
 import { loginUserApi, registerUserApi, loginWithGoogleApi, sendOtpApi, verifyOtpApi, UserProfile } from '../../utils/auth';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 declare global {
   interface Window {
@@ -208,6 +209,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="min-h-screen w-screen bg-canva-bg text-gray-100 flex flex-col items-center justify-center p-4 relative overflow-y-auto select-none">
+      {/* Top Right Theme Toggle */}
+      <div className="absolute top-5 right-5 z-20">
+        <ThemeToggle showLabel />
+      </div>
       {/* Background Decorative Blobs */}
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-canva-purple/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-canva-teal/20 rounded-full blur-3xl pointer-events-none" />

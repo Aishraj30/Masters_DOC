@@ -213,9 +213,9 @@ export const TextPanel: React.FC<TextPanelProps> = ({ canvas }) => {
         <div className="space-y-2.5">
           <button
             onClick={() => addHeadingText(canvas)}
-            className="w-full text-left p-3.5 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl text-white transition-all transform hover:scale-[1.01] flex items-center justify-between group"
+            className="w-full text-left p-3.5 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all transform hover:scale-[1.01] flex items-center justify-between group"
           >
-            <span className="font-sans font-extrabold text-2xl group-hover:text-canva-teal transition-colors">Add a heading</span>
+            <span className="font-sans font-extrabold text-2xl text-canva-text group-hover:text-canva-teal transition-colors">Add a heading</span>
             <span className="text-[10px] text-canva-teal bg-canva-purple/20 px-2 py-0.5 rounded font-mono">
               54px
             </span>
@@ -223,30 +223,30 @@ export const TextPanel: React.FC<TextPanelProps> = ({ canvas }) => {
 
           <button
             onClick={() => addSubheadingText(canvas)}
-            className="w-full text-left p-3 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl text-gray-200 transition-all transform hover:scale-[1.01] flex items-center justify-between group"
+            className="w-full text-left p-3 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all transform hover:scale-[1.01] flex items-center justify-between group"
           >
-            <span className="font-sans font-semibold text-base group-hover:text-white transition-colors">Add a subheading</span>
-            <span className="text-[10px] text-gray-400 bg-canva-panel px-2 py-0.5 rounded font-mono">
+            <span className="font-sans font-semibold text-base text-canva-text group-hover:text-canva-teal transition-colors">Add a subheading</span>
+            <span className="text-[10px] text-canva-text-muted bg-canva-panel border border-canva-border px-2 py-0.5 rounded font-mono">
               32px
             </span>
           </button>
 
           <button
             onClick={() => addBodyText(canvas)}
-            className="w-full text-left p-2.5 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl text-gray-400 transition-all transform hover:scale-[1.01] flex items-center justify-between group"
+            className="w-full text-left p-2.5 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all transform hover:scale-[1.01] flex items-center justify-between group"
           >
-            <span className="font-sans text-xs group-hover:text-gray-200 transition-colors">Add a little bit of body text</span>
-            <span className="text-[10px] text-gray-400 bg-canva-panel px-2 py-0.5 rounded font-mono">
+            <span className="font-sans text-xs text-canva-text-muted group-hover:text-canva-text transition-colors">Add a little bit of body text</span>
+            <span className="text-[10px] text-canva-text-muted bg-canva-panel border border-canva-border px-2 py-0.5 rounded font-mono">
               22px
             </span>
           </button>
 
           <button
             onClick={addLaTeXTitle}
-            className="w-full text-left p-2.5 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl text-gray-300 transition-all flex items-center justify-between group"
+            className="w-full text-left p-2.5 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all flex items-center justify-between group"
           >
-            <span className="font-serif italic font-bold text-sm text-cyan-300">LaTeX / ACM Paper Title</span>
-            <span className="text-[10px] text-cyan-400 bg-cyan-950/40 px-2 py-0.5 rounded font-mono">
+            <span className="font-serif italic font-bold text-sm text-canva-text group-hover:text-canva-teal transition-colors">LaTeX / ACM Paper Title</span>
+            <span className="text-[10px] text-canva-teal bg-canva-purple/20 border border-canva-border px-2 py-0.5 rounded font-mono">
               38px
             </span>
           </button>

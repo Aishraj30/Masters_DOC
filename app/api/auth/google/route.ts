@@ -59,11 +59,26 @@ export async function POST(request: Request) {
         password: `google_oauth_${Date.now()}_${Math.random()}`,
         avatarUrl: picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanEmail)}`,
         provider: 'google',
+        isPro: false,
+        subscriptionPlan: 'free',
+        subscriptionStatus: 'inactive',
+        oneTimePassesCount: 0,
+        payments: [],
       });
       await user.save();
     } else {
+      let needsSave = false;
       if (picture && (!user.avatarUrl || user.avatarUrl.includes('dicebear'))) {
         user.avatarUrl = picture;
+        needsSave = true;
+      }
+      if (user.isPro === undefined) { user.isPro = false; needsSave = true; }
+      if (!user.subscriptionPlan) { user.subscriptionPlan = 'free'; needsSave = true; }
+      if (!user.subscriptionStatus) { user.subscriptionStatus = 'inactive'; needsSave = true; }
+      if (user.oneTimePassesCount === undefined) { user.oneTimePassesCount = 0; needsSave = true; }
+      if (!user.payments) { user.payments = []; needsSave = true; }
+
+      if (needsSave) {
         await user.save();
       }
     }
@@ -83,6 +98,10 @@ export async function POST(request: Request) {
       phoneNumber: user.phoneNumber,
       avatarUrl: user.avatarUrl,
       provider: user.provider,
+      isPro: user.isPro || false,
+      subscriptionPlan: user.subscriptionPlan || 'free',
+      subscriptionStatus: user.subscriptionStatus || 'inactive',
+      oneTimePassesCount: user.oneTimePassesCount || 0,
     };
 
     return NextResponse.json({

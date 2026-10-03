@@ -135,7 +135,7 @@ export const IconifyPanel: React.FC<IconifyPanelProps> = ({ canvas }) => {
           <div className="grid grid-cols-4 gap-2">
             {filteredIcons.map((item) => {
               const IconComp = item.icon;
-              const displayColor = selectedColor === '#000000' ? '#e2e8f0' : selectedColor;
+              const displayColor = selectedColor === '#000000' ? 'var(--color-text)' : selectedColor;
 
               return (
                 <button
@@ -147,7 +147,7 @@ export const IconifyPanel: React.FC<IconifyPanelProps> = ({ canvas }) => {
                   title={`${item.name} (${item.category}) - Click to add to canvas`}
                 >
                   <IconComp className="w-6 h-6 transition-transform group-hover:scale-110" style={{ color: displayColor }} />
-                  <span className="text-[9px] text-gray-400 font-medium text-center truncate w-full mt-1 group-hover:text-white">
+                  <span className="text-[9px] text-canva-text font-medium text-center truncate w-full mt-1">
                     {item.name}
                   </span>
                 </button>

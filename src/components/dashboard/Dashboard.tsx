@@ -24,6 +24,7 @@ import { DashboardSidebar } from './DashboardSidebar';
 import { NewProjectModal } from './NewProjectModal';
 import { CANVAS_PRESETS } from '../../constants/presets';
 import { CanvasPreset } from '../../types/canvas';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 interface DashboardProps {
   currentUser: UserProfile | null;
@@ -60,18 +61,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   );
 
   const handleCreateProjectModalSubmit = (title: string, preset: CanvasPreset) => {
-    if (!currentUser) return;
-    const newProj = createNewProject(currentUser.id, title, preset);
-    refreshProjects();
-    onOpenProject(newProj.id);
-  };
-
-  const handleQuickPresetClick = (presetId: string) => {
-    const preset = CANVAS_PRESETS.find((p) => p.id === presetId) || CANVAS_PRESETS[0];
-    if (!currentUser) return;
-    const newProj = createNewProject(currentUser.id, `New ${preset.name}`, preset);
-    refreshProjects();
-    onOpenProject(newProj.id);
+    setIsNewProjectModalOpen(false);
+    onCreateNewProject(preset, title);
   };
 
   const handleDuplicate = (project: CanvasProject, e: React.MouseEvent) => {
@@ -98,8 +89,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div className="flex h-screen w-screen bg-[#0f1420] text-gray-100 overflow-hidden select-none font-sans relative">
-      {/* Slim Left Navigation Rail matching Image 2 */}
+    <div className="flex h-screen w-screen bg-canva-bg text-canva-text overflow-hidden select-none font-sans relative transition-colors">
+      {/* Left Navigation Sidebar */}
       <DashboardSidebar
         activeTab={sidebarTab}
         setActiveTab={setSidebarTab}
@@ -110,46 +101,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* Main Dashboard Content */}
       <div className="flex-1 flex flex-col h-screen overflow-y-auto relative">
-        {/* Top Header Banner matching Image 2 */}
-        <section className="relative w-full bg-gradient-to-r from-[#172238] via-[#24193d] to-[#142838] pt-8 pb-10 px-8 flex flex-col items-center border-b border-[#232d42]">
-          {/* Top-Right Start Free Trial Badge matching Image 2 */}
-          <div className="absolute top-4 right-8">
-            <button className="flex items-center space-x-1.5 px-3 py-1.5 bg-white text-purple-900 rounded-full font-bold text-xs shadow-lg hover:bg-gray-100 transition-all">
-              <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-              <span>Start your free trial</span>
-            </button>
+        {/* Top Header Banner */}
+        <section className="relative w-full bg-canva-sidebar border-b border-canva-border pt-8 pb-10 px-8 flex flex-col items-center transition-colors">
+          {/* Top-Right Theme Toggle */}
+          <div className="absolute top-4 right-8 flex items-center space-x-3">
+            <ThemeToggle />
           </div>
 
-          {/* Main Title matching Image 2 */}
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-purple-200 tracking-tight text-center mb-5">
+          {/* Main Title */}
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-canva-text tracking-tight text-center mb-5">
             What will you design today?
           </h1>
 
-          {/* Home / Templates Sub-Toggle Pill matching Image 2 */}
-          <div className="flex bg-[#121826] p-1 rounded-full border border-[#2a344b] mb-6">
+          {/* Home / Templates Sub-Toggle Pill */}
+          <div className="flex bg-canva-panel p-1 rounded-full border border-canva-border mb-6">
             <button
               onClick={() => setHeroTab('home')}
               className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
                 heroTab === 'home'
-                  ? 'bg-[#252f44] text-white shadow-md'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-canva-purple text-white shadow-md'
+                  : 'text-gray-400 hover:text-canva-text'
               }`}
             >
-              <HomeIcon className="w-3.5 h-3.5 text-cyan-400" />
+              <HomeIcon className="w-3.5 h-3.5 text-canva-teal" />
               <span>Home</span>
             </button>
-
-            {/* <button
-              onClick={() => setHeroTab('templates')}
-              className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                heroTab === 'templates'
-                  ? 'bg-[#252f44] text-white shadow-md'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-            >
-              <LayoutTemplate className="w-3.5 h-3.5 text-purple-400" />
-              <span>Templates</span>
-            </button> */}
           </div>
 
           {/* Large Centered Search Bar */}
@@ -160,67 +136,67 @@ export const Dashboard: React.FC<DashboardProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search anything"
-              className="w-full bg-white text-gray-900 placeholder-gray-500 rounded-full pl-12 pr-6 py-3 text-sm font-semibold shadow-xl focus:outline-none focus:ring-2 focus:ring-cyan-400"
+              className="w-full bg-canva-panel text-canva-text placeholder-gray-400 border border-canva-border rounded-full pl-12 pr-6 py-3 text-sm font-semibold shadow-xl focus:outline-none focus:ring-2 focus:ring-canva-teal"
             />
           </div>
         </section>
 
         {/* Main Workspace Body */}
         <main className="p-8 max-w-7xl w-full mx-auto space-y-10">
-          {/* "See what's new" Inspiration Banners matching Image 2 */}
+          {/* "See what's new" Inspiration Banners */}
           <section className="space-y-4">
-            <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+            <h2 className="text-lg font-bold text-canva-text flex items-center space-x-2">
               <span>See what's new</span>
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div className="bg-gradient-to-br from-purple-900 to-indigo-900 p-4 rounded-2xl border border-purple-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
-                <h3 className="font-extrabold text-xs text-white">Make a splash with Peppa Pig designs &gt;</h3>
-                <span className="text-[10px] text-purple-200 font-semibold">Featured Collection</span>
+              <div className="bg-gradient-to-br from-purple-800 to-indigo-900 p-4 rounded-2xl border border-purple-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
+                <h3 className="font-extrabold text-xs text-white" style={{ color: '#ffffff' }}>Make a splash with Peppa Pig designs &gt;</h3>
+                <span className="text-[10px] text-purple-200 font-semibold" style={{ color: '#e9d5ff' }}>Featured Collection</span>
               </div>
 
-              <div className="bg-gradient-to-br from-emerald-900 to-teal-900 p-4 rounded-2xl border border-emerald-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
-                <h3 className="font-extrabold text-xs text-white">For the Women Who Build & Create &gt;</h3>
-                <span className="text-[10px] text-emerald-200 font-semibold">Inspiration Series</span>
+              <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-4 rounded-2xl border border-emerald-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
+                <h3 className="font-extrabold text-xs text-white" style={{ color: '#ffffff' }}>For the Women Who Build & Create &gt;</h3>
+                <span className="text-[10px] text-emerald-200 font-semibold" style={{ color: '#a7f3d0' }}>Inspiration Series</span>
               </div>
 
-              <div className="bg-gradient-to-br from-blue-900 to-cyan-900 p-4 rounded-2xl border border-blue-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
-                <h3 className="font-extrabold text-xs text-white">Explore our vibrant summer travel...</h3>
-                <span className="text-[10px] text-cyan-200 font-semibold">Templates Pack</span>
+              <div className="bg-gradient-to-br from-blue-800 to-cyan-900 p-4 rounded-2xl border border-blue-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
+                <h3 className="font-extrabold text-xs text-white" style={{ color: '#ffffff' }}>Explore our vibrant summer travel...</h3>
+                <span className="text-[10px] text-cyan-200 font-semibold" style={{ color: '#bae6fd' }}>Templates Pack</span>
               </div>
 
-              <div className="bg-gradient-to-br from-orange-900 to-red-900 p-4 rounded-2xl border border-orange-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
-                <h3 className="font-extrabold text-xs text-white">Design hot deals for your summer sale. &gt;</h3>
-                <span className="text-[10px] text-orange-200 font-semibold">Marketing Graphics</span>
+              <div className="bg-gradient-to-br from-orange-800 to-red-900 p-4 rounded-2xl border border-orange-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
+                <h3 className="font-extrabold text-xs text-white" style={{ color: '#ffffff' }}>Design hot deals for your summer sale. &gt;</h3>
+                <span className="text-[10px] text-orange-200 font-semibold" style={{ color: '#fed7aa' }}>Marketing Graphics</span>
               </div>
 
-              <div className="bg-gradient-to-br from-amber-900 to-yellow-900 p-4 rounded-2xl border border-amber-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
-                <h3 className="font-extrabold text-xs text-white">Designs that make personal finance fun &gt;</h3>
-                <span className="text-[10px] text-amber-200 font-semibold">Infographics</span>
+              <div className="bg-gradient-to-br from-amber-800 to-yellow-900 p-4 rounded-2xl border border-amber-500/30 flex flex-col justify-between h-36 shadow-lg hover:scale-[1.02] transition-transform cursor-pointer">
+                <h3 className="font-extrabold text-xs text-white" style={{ color: '#ffffff' }}>Designs that make personal finance fun &gt;</h3>
+                <span className="text-[10px] text-amber-200 font-semibold" style={{ color: '#fef08a' }}>Infographics</span>
               </div>
             </div>
           </section>
 
-          {/* "Recent Projects" Section (Essential!) */}
+          {/* "Recent Projects" Section */}
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center space-x-2">
-                <Clock className="w-5 h-5 text-cyan-400" />
+              <h2 className="text-xl font-bold text-canva-text flex items-center space-x-2">
+                <Clock className="w-5 h-5 text-canva-teal" />
                 <span>Recent projects</span>
               </h2>
 
               <button
                 onClick={() => setIsNewProjectModalOpen(true)}
-                className="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center space-x-1"
+                className="text-xs font-bold text-canva-teal hover:underline flex items-center space-x-1"
               >
                 <span>+ Create new project</span>
               </button>
             </div>
 
             {filteredProjects.length === 0 ? (
-              <div className="p-8 bg-[#151c2c] border border-[#242f45] rounded-2xl text-center space-y-3">
-                <FolderOpen className="w-10 h-10 text-gray-500 mx-auto" />
-                <h3 className="font-bold text-sm text-gray-300">No projects yet</h3>
+              <div className="p-8 bg-canva-panel border border-canva-border rounded-2xl text-center space-y-3">
+                <FolderOpen className="w-10 h-10 text-gray-400 mx-auto" />
+                <h3 className="font-bold text-sm text-canva-text">No projects yet</h3>
                 <p className="text-xs text-gray-500">
                   Select any preset above to create your first design project.
                 </p>
@@ -231,24 +207,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <div
                     key={project.id}
                     onClick={() => onOpenProject(project.id)}
-                    className="group bg-[#151c2c] border border-[#242f45] hover:border-cyan-500 rounded-2xl overflow-hidden shadow-lg hover:shadow-cyan-500/10 transition-all cursor-pointer flex flex-col justify-between"
+                    className="group bg-canva-panel border border-canva-border hover:border-canva-teal rounded-2xl overflow-hidden shadow-lg transition-all cursor-pointer flex flex-col justify-between"
                   >
                     {/* Visual Card Preview */}
-                    <div className="h-36 bg-[#1a2336] p-4 flex flex-col items-center justify-center relative border-b border-[#242f45] group-hover:bg-[#1e2a40] transition-colors">
-                      <div className="w-16 h-20 bg-white/90 rounded-md shadow-md flex items-center justify-center p-2 text-gray-800">
+                    <div className="h-36 bg-canva-sidebar p-4 flex flex-col items-center justify-center relative border-b border-canva-border group-hover:bg-canva-hover transition-colors">
+                      <div className="w-16 h-20 bg-canva-panel rounded-md shadow-md flex items-center justify-center p-2 text-canva-text border border-canva-border">
                         <span className="text-[10px] font-bold text-center truncate">
                           {project.title}
                         </span>
                       </div>
-                      <span className="absolute bottom-2 left-2 text-[10px] text-gray-400 bg-black/40 px-2 py-0.5 rounded font-mono">
+                      <span className="absolute bottom-2 left-2 text-[10px] text-canva-text bg-canva-panel/80 px-2 py-0.5 rounded font-mono border border-canva-border">
                         {project.preset.name}
                       </span>
                     </div>
 
                     {/* Card Footer Info & Actions */}
-                    <div className="p-3.5 flex items-center justify-between bg-[#151c2c]">
+                    <div className="p-3.5 flex items-center justify-between bg-canva-panel">
                       <div className="truncate">
-                        <h4 className="font-bold text-xs text-white truncate group-hover:text-cyan-400 transition-colors">
+                        <h4 className="font-bold text-xs text-canva-text truncate group-hover:text-canva-teal transition-colors">
                           {project.title}
                         </h4>
                         <span className="text-[10px] text-gray-400">
@@ -261,7 +237,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                           type="button"
                           onClick={(e) => handleDuplicate(project, e)}
                           title="Duplicate"
-                          className="p-1 text-gray-400 hover:text-white hover:bg-[#253147] rounded"
+                          className="p-1 text-gray-400 hover:text-canva-text hover:bg-canva-hover rounded"
                         >
                           <Copy className="w-3.5 h-3.5" />
                         </button>
@@ -282,10 +258,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </section>
         </main>
 
-        {/* Floating Help Assistant Button matching Image 2 */}
+        {/* Floating Help Assistant Button */}
         <div className="fixed bottom-6 right-6 z-40">
           <button
-            className="w-11 h-11 rounded-full bg-[#8326ee] hover:bg-purple-700 text-white flex items-center justify-center shadow-2xl transform hover:scale-110 transition-all"
+            className="w-11 h-11 rounded-full bg-canva-purple hover:bg-canva-purple-hover text-white flex items-center justify-center shadow-2xl transform hover:scale-110 transition-all"
             title="Help & Assistant"
           >
             <HelpCircle className="w-6 h-6 stroke-[2.5]" />

@@ -16,7 +16,8 @@ import {
   Hexagon,
   Diamond as DiamondIcon,
   Heart as HeartIcon,
-  Shapes
+  Shapes,
+  Sparkles
 } from 'lucide-react';
 import { 
   addRectangle, 
@@ -177,6 +178,8 @@ export const ElementsPanel: React.FC<ElementsPanelProps> = ({ canvas }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-thin scrollbar-thumb-canva-border">
+
+
         {/* Basic Geometric Shapes Grid with Filled vs Hollow Toggle */}
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -223,9 +226,9 @@ export const ElementsPanel: React.FC<ElementsPanelProps> = ({ canvas }) => {
                   onClick={shape.action}
                   className="flex flex-col items-center justify-center p-3 bg-canva-sidebar hover:bg-canva-hover border border-canva-border rounded-xl transition-all hover:scale-105 group relative cursor-grab active:cursor-grabbing"
                 >
-                  <Icon className={`w-6 h-6 mb-1 transition-colors ${shapeStyle === 'hollow' ? 'text-canva-teal stroke-2 fill-none' : 'text-canva-teal fill-canva-teal/30 group-hover:text-white'}`} />
-                  <span className="text-[11px] text-gray-300 font-medium truncate w-full text-center">{shape.name}</span>
-                  <span className="text-[9px] text-gray-500 font-mono mt-0.5">
+                  <Icon className={`w-6 h-6 mb-1 transition-colors ${shapeStyle === 'hollow' ? 'text-canva-teal stroke-2 fill-none' : 'text-canva-teal fill-canva-teal/30 group-hover:text-canva-text'}`} />
+                  <span className="text-[11px] text-canva-text font-medium truncate w-full text-center">{shape.name}</span>
+                  <span className="text-[9px] text-canva-text-muted font-mono mt-0.5">
                     {shapeStyle === 'hollow' ? 'Hollow' : 'Filled'}
                   </span>
                 </button>

@@ -18,6 +18,7 @@ import {
   LineDiagramResult 
 } from '../../utils/imageToLineDiagram';
 import { addSvgIconPath } from '../../utils/fabricHelpers';
+import { getCurrentUser } from '../../utils/auth';
 
 interface PhotoToLineDiagramModalProps {
   isOpen: boolean;
@@ -53,7 +54,8 @@ export const PhotoToLineDiagramModal: React.FC<PhotoToLineDiagramModalProps> = (
   const [selectedImageSrc, setSelectedImageSrc] = useState<string>(SAMPLE_PRESET_IMAGES[0].url);
   const [loadedImgElement, setLoadedImgElement] = useState<HTMLImageElement | null>(null);
 
-  // Line Diagram settings
+  // Mandatory Unique Title & Line Diagram settings
+  const [diagramTitle, setDiagramTitle] = useState<string>('');
   const [sensitivity, setSensitivity] = useState<number>(55);
   const [noiseSuppression, setNoiseSuppression] = useState<number>(2);
   const [detailLevel, setDetailLevel] = useState<'simple' | 'detailed'>('detailed');
@@ -64,6 +66,8 @@ export const PhotoToLineDiagramModal: React.FC<PhotoToLineDiagramModalProps> = (
   // Output generated vector path
   const [result, setResult] = useState<LineDiagramResult | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Load HTMLImageElement whenever image source changes
   useEffect(() => {
@@ -98,6 +102,9 @@ export const PhotoToLineDiagramModal: React.FC<PhotoToLineDiagramModalProps> = (
         };
         const res = convertImageToLineDiagram(loadedImgElement, options);
         setResult(res);
+        if (!diagramTitle) {
+          setDiagramTitle(`Photo Vector ${Date.now().toString().slice(-4)}`);
+        }
       } catch (err) {
         console.error('Line diagram generation error:', err);
       } finally {
@@ -123,10 +130,48 @@ export const PhotoToLineDiagramModal: React.FC<PhotoToLineDiagramModalProps> = (
     }
   };
 
-  const handleAddToCanvas = () => {
+  const handleAddToCanvas = async () => {
     if (!canvas || !result || !result.svgPath) return;
-    addSvgIconPath(canvas, result.svgPath, strokeColor, undefined, strokeWidth);
-    onClose();
+
+    if (!diagramTitle || !diagramTitle.trim()) {
+      setErrorMsg('Please enter a unique Diagram Title before submitting.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const currentUser = getCurrentUser();
+      const res = await fetch('/api/diagrams/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: diagramTitle.trim(),
+          svgPath: result.svgPath,
+          strokeColor,
+          strokeWidth,
+          sourcePhotoUrl: selectedImageSrc,
+          user: currentUser,
+        }),
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        setErrorMsg(data.message || 'Diagram title must be unique. Please choose another title.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      addSvgIconPath(canvas, result.svgPath, strokeColor, undefined, strokeWidth);
+      setIsSubmitting(false);
+      onClose();
+    } catch (err: any) {
+      console.error('Submit Diagram Error:', err);
+      addSvgIconPath(canvas, result.svgPath, strokeColor, undefined, strokeWidth);
+      setIsSubmitting(false);
+      onClose();
+    }
   };
 
   return (
@@ -251,6 +296,30 @@ export const PhotoToLineDiagramModal: React.FC<PhotoToLineDiagramModalProps> = (
               )}
             </div>
 
+            {/* Mandatory Unique Diagram Title Input */}
+            <div className="bg-canva-sidebar p-3 rounded-xl border border-canva-border space-y-1">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-amber-400 flex items-center space-x-1.5 uppercase tracking-wider">
+                  <Layers className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Diagram Title (Must be unique):</span>
+                </label>
+                <span className="text-[10px] text-gray-400">Required for Admin Approval Queue</span>
+              </div>
+              <input
+                type="text"
+                value={diagramTitle}
+                onChange={(e) => setDiagramTitle(e.target.value)}
+                placeholder="e.g. Lab Microscope Outline v1"
+                className="w-full bg-canva-bg border border-canva-border focus:border-amber-400 rounded-xl px-3 py-1.5 text-xs text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium"
+              />
+            </div>
+
+            {errorMsg && (
+              <div className="p-2.5 bg-rose-500/20 border border-rose-500/40 rounded-xl text-rose-300 text-xs font-medium">
+                ⚠️ {errorMsg}
+              </div>
+            )}
+
             {/* Controls Bar */}
             <div className="bg-canva-sidebar p-3.5 rounded-xl border border-canva-border space-y-3">
               {/* Row 1: Detail Level & Invert */}
@@ -344,11 +413,15 @@ export const PhotoToLineDiagramModal: React.FC<PhotoToLineDiagramModalProps> = (
 
           <button
             onClick={handleAddToCanvas}
-            disabled={!result || !result.svgPath}
+            disabled={!result || !result.svgPath || isSubmitting}
             className="px-6 py-2.5 bg-gradient-to-r from-canva-purple to-canva-teal hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg shadow-canva-purple/20 transition-all flex items-center space-x-2 disabled:opacity-50"
           >
-            <Sparkles className="w-4 h-4 text-canva-teal" />
-            <span>Add Line Diagram to Canvas</span>
+            {isSubmitting ? (
+              <RefreshCw className="w-4 h-4 animate-spin text-canva-teal" />
+            ) : (
+              <Sparkles className="w-4 h-4 text-canva-teal" />
+            )}
+            <span>{isSubmitting ? 'Submitting to Admin Queue...' : 'Submit & Add Line Diagram'}</span>
           </button>
         </div>
       </div>

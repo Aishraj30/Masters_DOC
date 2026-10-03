@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/db';
+import Feedback from '@/models/Feedback';
 import { sendFeedbackEmail } from '@/lib/mailer';
 
 export async function POST(request: Request) {
@@ -13,6 +15,23 @@ export async function POST(request: Request) {
       );
     }
 
+    // Save Feedback to MongoDB
+    try {
+      await connectToDatabase();
+      const newFeedback = new Feedback({
+        userId: user?.id || '',
+        userEmail: user?.email || '',
+        rating: Number(rating),
+        comments: comments ? String(comments).trim() : '',
+        designTitle: designTitle || 'Untitled Design',
+        exportFormat: exportFormat || 'PNG',
+      });
+      await newFeedback.save();
+    } catch (dbErr: any) {
+      console.warn('Could not save feedback to DB:', dbErr.message);
+    }
+
+    // Dispatch feedback notification email
     const mailResult = await sendFeedbackEmail({
       rating: Number(rating),
       comments: comments ? String(comments).trim() : '',

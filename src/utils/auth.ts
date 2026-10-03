@@ -6,6 +6,11 @@ export interface UserProfile {
   phoneNumber?: string;
   avatarUrl?: string;
   provider: 'password' | 'google';
+  role?: 'user' | 'admin';
+  isPro?: boolean;
+  subscriptionPlan?: string;
+  subscriptionStatus?: string;
+  oneTimePassesCount?: number;
 }
 
 const CURRENT_USER_KEY = 'docmaster_current_user_v1';
@@ -30,6 +35,12 @@ export const setCurrentUser = (user: UserProfile) => {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    if (user.isPro !== undefined) {
+      localStorage.setItem('is_pro_user', String(!!user.isPro));
+    }
+    if (user.oneTimePassesCount !== undefined) {
+      localStorage.setItem('has_onetime_pass', String((user.oneTimePassesCount || 0) > 0));
+    }
   } catch (e) {
     console.error('Failed to set active user', e);
   }
@@ -50,6 +61,8 @@ export const logoutUser = () => {
   removeToken();
   if (typeof window !== 'undefined') {
     localStorage.removeItem(CURRENT_USER_KEY);
+    localStorage.removeItem('is_pro_user');
+    localStorage.removeItem('has_onetime_pass');
   }
 };
 
@@ -266,4 +279,41 @@ export const fetchCurrentUserApi = async (): Promise<UserProfile | null> => {
 
 export const isAuthenticated = (): boolean => {
   return getCurrentUser() !== null;
+};
+
+export const consumeOneTimePassApi = async (): Promise<{ success: boolean; oneTimePassesCount?: number }> => {
+  const token = getToken();
+  if (!token) {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('has_onetime_pass');
+    }
+    return { success: true, oneTimePassesCount: 0 };
+  }
+
+  try {
+    const response = await fetch('/api/auth/consume-pass', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+    if (data.success) {
+      if (!data.hasOneTimePass && typeof window !== 'undefined') {
+        localStorage.removeItem('has_onetime_pass');
+      }
+      // Re-sync current user in local cache
+      fetchCurrentUserApi().catch(() => {});
+      return { success: true, oneTimePassesCount: data.oneTimePassesCount };
+    }
+  } catch (err) {
+    console.error('Consume Pass API Error:', err);
+  }
+
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('has_onetime_pass');
+  }
+  return { success: true, oneTimePassesCount: 0 };
 };

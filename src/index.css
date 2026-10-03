@@ -2,10 +2,162 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Default: Royal Smoke (Dark Theme) */
+  --color-bg: #1C1C1C;
+  --color-sidebar: #151515;
+  --color-panel: #242424;
+  --color-hover: #2e2e2e;
+  --color-border: #333333;
+  --color-purple: #6A0DAD;
+  --color-purple-hover: #580B93;
+  --color-accent: #00c4cc;
+  --color-text: #F3F4F6;
+  --color-text-muted: #9CA3AF;
+  --color-card-bg: #242424;
+}
+
+/* Light Theme: Eucalyptus Glow (#F4EFE6 & #A7C4A0) */
+html.light, .light {
+  --color-bg: #F4EFE6;
+  --color-sidebar: #EAE4D9;
+  --color-panel: #FFFFFF;
+  --color-hover: #E2DACD;
+  --color-border: #DCD3C5;
+  --color-purple: #A7C4A0;
+  --color-purple-hover: #8EB086;
+  --color-accent: #2D6A4F;
+  --color-text: #1F2937;
+  --color-text-muted: #4B5563;
+  --color-card-bg: #FFFFFF;
+}
+
+/* Dark Theme: Royal Smoke (#1C1C1C & #6A0DAD) */
+html.dark, .dark {
+  --color-bg: #1C1C1C;
+  --color-sidebar: #151515;
+  --color-panel: #242424;
+  --color-hover: #2e2e2e;
+  --color-border: #333333;
+  --color-purple: #6A0DAD;
+  --color-purple-hover: #580B93;
+  --color-accent: #00c4cc;
+  --color-text: #F3F4F6;
+  --color-text-muted: #9CA3AF;
+  --color-card-bg: #242424;
+}
+
 @layer base {
   body {
-    @apply bg-[#0e1318] text-gray-100 antialiased font-sans;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    @apply antialiased font-sans transition-colors duration-200;
   }
+}
+
+/* LIGHT THEME HIGH-CONTRAST OVERRIDES */
+html.light {
+  color: #1f2937;
+}
+
+/* Light Theme Text Color Adjustments for Theme Containers */
+html.light .text-canva-text {
+  color: #1f2937 !important;
+}
+
+html.light .text-canva-text-muted {
+  color: #4b5563 !important;
+}
+
+/* Light Theme Canvas Checkerboard & Editor Workspace */
+html.light .canvas-checkerboard {
+  background-color: #f0eadd !important;
+  background-image: 
+    linear-gradient(45deg, #e3dcce 25%, transparent 25%), 
+    linear-gradient(-45deg, #e3dcce 25%, transparent 25%), 
+    linear-gradient(45deg, transparent 75%, #e3dcce 75%), 
+    linear-gradient(-45deg, transparent 75%, #e3dcce 75%) !important;
+}
+
+/* Light Theme Panel Backgrounds & Hardcoded Dark Classes */
+html.light [class*="0e1318"],
+html.light [class*="0b0f14"],
+html.light [class*="0f1420"],
+html.light [class*="18191c"],
+html.light [class*="131920"],
+html.light [class*="1c2430"],
+html.light [class*="18202a"],
+html.light [class*="1e1f22"],
+html.light [class*="151515"],
+html.light .bg-canva-bg,
+html.light .bg-canva-sidebar {
+  background-color: #F4EFE6 !important;
+}
+
+html.light [class*="252627"],
+html.light [class*="242424"],
+html.light [class*="283446"],
+html.light .bg-canva-panel {
+  background-color: #FFFFFF !important;
+}
+
+html.light .bg-canva-hover,
+html.light .hover\:bg-canva-hover:hover {
+  background-color: #E2DACD !important;
+}
+
+/* Light Theme Borders */
+html.light [class*="242e3b"],
+html.light [class*="283446"],
+html.light [class*="2a3441"],
+html.light [class*="38393c"],
+html.light [class*="333333"],
+html.light .border-canva-border {
+  border-color: #DCD3C5 !important;
+}
+
+/* Light Theme Inputs & Controls */
+html.light input:not([type="color"]),
+html.light select,
+html.light textarea {
+  background-color: #FFFFFF !important;
+  color: #1f2937 !important;
+  border-color: #A7C4A0 !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #6b7280 !important;
+}
+
+/* Light Theme Eucalyptus Green Accents */
+html.light .bg-canva-teal,
+html.light .bg-canva-purple {
+  background-color: #A7C4A0 !important;
+  color: #1F2937 !important;
+}
+
+html.light .text-canva-teal,
+html.light .text-canva-purple {
+  color: #2D6A4F !important;
+}
+
+html.light .border-canva-teal,
+html.light .border-canva-purple {
+  border-color: #A7C4A0 !important;
+}
+
+/* Button & Icon Badges in Light Mode */
+html.light button.bg-canva-panel,
+html.light button[class*="1c2430"] {
+  background-color: #EAE4D9 !important;
+  color: #1f2937 !important;
+  border-color: #DCD3C5 !important;
+}
+
+html.light button.bg-canva-panel:hover,
+html.light button[class*="1c2430"]:hover {
+  background-color: #E2DACD !important;
 }
 
 /* Custom Scrollbars */
@@ -15,28 +167,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #18191c;
+  background: var(--color-sidebar);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #38393c;
+  background: var(--color-border);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4e5055;
-}
-
-/* Canvas transparent checkerboard pattern */
-.canvas-checkerboard {
-  background-color: #1e1f22;
-  background-image: 
-    linear-gradient(45deg, #28292d 25%, transparent 25%), 
-    linear-gradient(-45deg, #28292d 25%, transparent 25%), 
-    linear-gradient(45deg, transparent 75%, #28292d 75%), 
-    linear-gradient(-45deg, transparent 75%, #28292d 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background: var(--color-hover);
 }
 
 /* Tooltip animation */

@@ -90,6 +90,11 @@ export async function POST(request: Request) {
       password: hashedPassword,
       avatarUrl,
       provider: 'password',
+      isPro: false,
+      subscriptionPlan: 'free',
+      subscriptionStatus: 'inactive',
+      oneTimePassesCount: 0,
+      payments: [],
     });
 
     await newUser.save();
@@ -109,6 +114,10 @@ export async function POST(request: Request) {
       phoneNumber: newUser.phoneNumber,
       avatarUrl: newUser.avatarUrl,
       provider: newUser.provider,
+      isPro: false,
+      subscriptionPlan: 'free',
+      subscriptionStatus: 'inactive',
+      oneTimePassesCount: 0,
     };
 
     return NextResponse.json(

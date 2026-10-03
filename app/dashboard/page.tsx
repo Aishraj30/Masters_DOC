@@ -27,6 +27,14 @@ export default function DashboardRoutePage() {
     fetchCurrentUserApi().then((user) => {
       if (user) {
         setCurrentUser(user);
+        if (
+          user.role === 'admin' ||
+          user.username?.toLowerCase() === 'admin@2005' ||
+          user.email?.toLowerCase() === 'admin@2005.com'
+        ) {
+          router.push('/admin');
+          return;
+        }
       } else {
         router.push('/auth');
       }

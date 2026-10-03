@@ -28,13 +28,28 @@ export default function Home() {
     fetchCurrentUserApi().then((user) => {
       if (user) {
         setCurrentUser(user);
+        if (
+          user.role === 'admin' ||
+          user.username?.toLowerCase() === 'admin@2005' ||
+          user.email?.toLowerCase() === 'admin@2005.com'
+        ) {
+          router.push('/admin');
+        }
       }
     });
-  }, []);
+  }, [router]);
 
   const handleOpenLogin = () => {
     if (currentUser) {
-      router.push('/dashboard');
+      if (
+        currentUser.role === 'admin' ||
+        currentUser.username?.toLowerCase() === 'admin@2005' ||
+        currentUser.email?.toLowerCase() === 'admin@2005.com'
+      ) {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } else {
       router.push('/auth');
     }
@@ -42,7 +57,15 @@ export default function Home() {
 
   const handleOpenSignup = () => {
     if (currentUser) {
-      router.push('/dashboard');
+      if (
+        currentUser.role === 'admin' ||
+        currentUser.username?.toLowerCase() === 'admin@2005' ||
+        currentUser.email?.toLowerCase() === 'admin@2005.com'
+      ) {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } else {
       router.push('/auth');
     }

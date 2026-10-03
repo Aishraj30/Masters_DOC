@@ -25,14 +25,30 @@ export default function AuthRoutePage() {
     fetchCurrentUserApi().then((user) => {
       if (user) {
         setCurrentUser(user);
-        router.push('/dashboard');
+        if (
+          user.role === 'admin' ||
+          user.username?.toLowerCase() === 'admin@2005' ||
+          user.email?.toLowerCase() === 'admin@2005.com'
+        ) {
+          router.push('/admin');
+        } else {
+          router.push('/dashboard');
+        }
       }
     });
   }, [router]);
 
   const handleLoginSuccess = (user: UserProfile) => {
     setCurrentUser(user);
-    router.push('/dashboard');
+    if (
+      user.role === 'admin' ||
+      user.username?.toLowerCase() === 'admin@2005' ||
+      user.email?.toLowerCase() === 'admin@2005.com'
+    ) {
+      router.push('/admin');
+    } else {
+      router.push('/dashboard');
+    }
   };
 
   return <LoginPage onLoginSuccess={handleLoginSuccess} />;

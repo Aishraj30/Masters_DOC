@@ -29,28 +29,28 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   ];
 
   return (
-    <aside className="w-[76px] bg-[#0e131f] border-r border-[#1e2638] flex flex-col items-center py-4 justify-between h-screen select-none font-sans text-gray-300 z-20">
+    <aside className="w-[76px] bg-canva-sidebar border-r border-canva-border flex flex-col items-center py-4 justify-between h-screen select-none font-sans text-canva-text z-20 transition-colors">
       <div className="flex flex-col items-center space-y-4 w-full">
         {/* Top Left Menu Icon */}
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#6320ee] to-[#00c4cc] flex items-center justify-center shadow-md mb-1">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-canva-purple to-canva-teal flex items-center justify-center shadow-md mb-1">
           <span className="text-white font-extrabold text-sm">D</span>
         </div>
 
-        {/* Big "+ Create" Button matching Image 2 */}
+        {/* "+ Create" Button */}
         <button
           onClick={onOpenNewProjectModal}
           className="flex flex-col items-center justify-center group"
           title="Create New Project"
         >
-          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-canva-purple to-canva-purple-hover text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
             <Plus className="w-6 h-6 stroke-[3]" />
           </div>
-          <span className="text-[10px] font-bold text-gray-300 mt-1">Create</span>
+          <span className="text-[10px] font-bold text-canva-text mt-1">Create</span>
         </button>
 
-        <div className="w-10 h-px bg-[#1e2638]" />
+        <div className="w-10 h-px bg-canva-border" />
 
-        {/* Navigation Items matching Image 2 */}
+        {/* Navigation Items */}
         <nav className="flex flex-col space-y-3 w-full px-2">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -61,11 +61,11 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                 onClick={() => setActiveTab(item.id)}
                 className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all ${
                   isActive
-                    ? 'bg-[#1e283d] text-cyan-400 font-bold'
-                    : 'text-gray-400 hover:text-white hover:bg-[#161d2e]'
+                    ? 'bg-canva-purple/20 text-canva-teal font-bold'
+                    : 'text-gray-400 hover:text-canva-text hover:bg-canva-hover'
                 }`}
               >
-                <Icon className={`w-5 h-5 mb-0.5 ${isActive ? 'text-cyan-400' : 'text-gray-400'}`} />
+                <Icon className={`w-5 h-5 mb-0.5 ${isActive ? 'text-canva-teal' : 'text-gray-400'}`} />
                 <span className="text-[10px] tracking-tight">{item.label}</span>
               </button>
             );
@@ -73,10 +73,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         </nav>
       </div>
 
-      {/* Bottom Profile & Notifications matching Image 2 */}
+      {/* Bottom Profile & Notifications */}
       <div className="flex flex-col items-center space-y-3">
         <button
-          className="text-gray-400 hover:text-white p-2 rounded-xl hover:bg-[#161d2e]"
+          className="text-gray-400 hover:text-canva-text p-2 rounded-xl hover:bg-canva-hover"
           title="Notifications"
         >
           <Bell className="w-5 h-5" />
@@ -87,10 +87,10 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
             <img
               src={currentUser.avatarUrl}
               alt={currentUser.name}
-              className="w-8 h-8 rounded-full object-cover border-2 border-cyan-400 cursor-pointer"
+              className="w-8 h-8 rounded-full object-cover border-2 border-canva-teal cursor-pointer"
             />
           ) : (
-            <div className="w-8 h-8 rounded-full bg-cyan-600 flex items-center justify-center text-white text-xs font-bold cursor-pointer">
+            <div className="w-8 h-8 rounded-full bg-canva-purple flex items-center justify-center text-white text-xs font-bold cursor-pointer">
               {currentUser?.name?.charAt(0) || 'U'}
             </div>
           )}

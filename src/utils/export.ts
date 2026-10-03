@@ -13,7 +13,9 @@ export const exportCanvas = async (
   filename: string = 'docmaster-design',
   multiplier: number = 2,
   quality: number = 0.95,
-  pages?: CanvasPage[]
+  pages?: CanvasPage[],
+  includeWatermark: boolean = true,
+  watermarkText: string = 'RESEARCH RADAR'
 ) => {
   if (!canvas) return;
 
@@ -23,9 +25,13 @@ export const exportCanvas = async (
   // Check if canvas already had a watermark before export
   const hadWatermarkBefore = canvas.getObjects().some((obj) => (obj as any).isWatermark);
 
-  // Apply watermark for export
-  if (!hadWatermarkBefore) {
-    addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+  // Apply or remove watermark for export depending on user subscription/pass
+  if (includeWatermark) {
+    if (!hadWatermarkBefore) {
+      addWatermarkToCanvas(canvas, watermarkText);
+    }
+  } else {
+    removeWatermarkFromCanvas(canvas);
   }
 
   canvas.requestRenderAll();
@@ -52,7 +58,11 @@ export const exportCanvas = async (
           if (page.jsonState) {
             await new Promise<void>((resolve) => {
               canvas.loadFromJSON(page.jsonState, () => {
-                addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+                if (includeWatermark) {
+                  addWatermarkToCanvas(canvas, watermarkText);
+                } else {
+                  removeWatermarkFromCanvas(canvas);
+                }
                 canvas.renderAll();
                 const imgData = canvas.toDataURL({
                   format: 'jpeg',
@@ -64,7 +74,11 @@ export const exportCanvas = async (
               });
             });
           } else {
-            addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+            if (includeWatermark) {
+              addWatermarkToCanvas(canvas, watermarkText);
+            } else {
+              removeWatermarkFromCanvas(canvas);
+            }
             canvas.renderAll();
             const imgData = canvas.toDataURL({
               format: 'jpeg',
@@ -98,7 +112,11 @@ export const exportCanvas = async (
           if (page.jsonState) {
             await new Promise<void>((resolve) => {
               canvas.loadFromJSON(page.jsonState, () => {
-                addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+                if (includeWatermark) {
+                  addWatermarkToCanvas(canvas, watermarkText);
+                } else {
+                  removeWatermarkFromCanvas(canvas);
+                }
                 canvas.renderAll();
                 const imgData = canvas.toDataURL({
                   format: 'png',
@@ -115,7 +133,11 @@ export const exportCanvas = async (
               });
             });
           } else {
-            addWatermarkToCanvas(canvas, 'RESEARCH RADAR');
+            if (includeWatermark) {
+              addWatermarkToCanvas(canvas, watermarkText);
+            } else {
+              removeWatermarkFromCanvas(canvas);
+            }
             canvas.renderAll();
             const imgData = canvas.toDataURL({
               format: 'png',

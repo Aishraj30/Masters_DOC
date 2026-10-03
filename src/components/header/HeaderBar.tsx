@@ -15,9 +15,11 @@ import {
   Clock,
   Home,
   CheckCircle2,
+  ShieldCheck,
 } from 'lucide-react';
 import { CanvasPreset } from '../../types/canvas';
 import { UserProfile } from '../../utils/auth';
+import { ThemeToggle } from '../common/ThemeToggle';
 
 interface HeaderBarProps {
   title: string;
@@ -30,6 +32,7 @@ interface HeaderBarProps {
   canRedo: boolean;
   onOpenExportModal: () => void;
   onOpenPresentModal: () => void;
+  onOpenAdminModal?: () => void;
   onToggleWatermark: () => void;
   onSaveJson: () => void;
   onLoadJson: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -50,6 +53,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   canRedo,
   onOpenExportModal,
   onOpenPresentModal,
+  onOpenAdminModal,
   onToggleWatermark,
   onSaveJson,
   onLoadJson,
@@ -86,10 +90,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <Palette className="w-4 h-4 text-white" />
           </div>
           <div className="flex flex-col hidden sm:flex">
-            <span className="font-bold text-sm bg-gradient-to-r from-white via-gray-200 to-canva-teal bg-clip-text text-transparent tracking-tight">
+            <span className="font-extrabold text-sm text-canva-text tracking-tight">
               RESEARCH RADAR
             </span>
-            <span className="text-[10px] text-emerald-400 font-medium -mt-1 flex items-center space-x-1">
+            <span className="text-[10px] text-canva-teal font-medium -mt-1 flex items-center space-x-1">
               <CheckCircle2 className="w-2.5 h-2.5" />
               <span>Saved</span>
             </span>
@@ -102,7 +106,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         <div className="flex items-center space-x-1">
           <button
             onClick={onNewDesign}
-            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md hover:bg-canva-hover text-xs font-medium text-gray-300 transition-colors"
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md hover:bg-canva-hover text-xs font-medium text-canva-text transition-colors"
             title="Create New Blank Design"
           >
             <FilePlus className="w-3.5 h-3.5 text-canva-teal" />
@@ -111,19 +115,19 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
           <button
             onClick={onSaveJson}
-            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md hover:bg-canva-hover text-xs font-medium text-gray-300 transition-colors"
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md hover:bg-canva-hover text-xs font-medium text-canva-text transition-colors"
             title="Export Canvas File (.docmaster JSON)"
           >
-            <Save className="w-3.5 h-3.5" />
+            <Save className="w-3.5 h-3.5 text-canva-text" />
             <span className="hidden lg:inline">Save</span>
           </button>
 
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md hover:bg-canva-hover text-xs font-medium text-gray-300 transition-colors"
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md hover:bg-canva-hover text-xs font-medium text-canva-text transition-colors"
             title="Open Canvas File"
           >
-            <FolderOpen className="w-3.5 h-3.5" />
+            <FolderOpen className="w-3.5 h-3.5 text-canva-text" />
             <span className="hidden lg:inline">Open</span>
           </button>
           <input
@@ -188,6 +192,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
       {/* Right Section: User Badge, Watermark, Present & Export */}
       <div className="flex items-center space-x-2">
+        {/* Theme Switcher Toggle (Royal Smoke <-> Eucalyptus Glow) */}
+        <ThemeToggle showLabel />
+
         {/* User Session Badge */}
         <div className="hidden lg:flex items-center space-x-2 bg-canva-panel px-2.5 py-1 rounded-md border border-canva-border text-xs text-gray-300">
           <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
@@ -202,6 +209,20 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
           <span className="hidden sm:inline">Watermark</span>
         </button> */}
+
+        {(currentUser?.role === 'admin' ||
+          currentUser?.username?.toLowerCase() === 'admin@2005' ||
+          currentUser?.email?.toLowerCase() === 'inforesearchradar@gmail.com' ||
+          currentUser?.email?.toLowerCase().includes('admin')) && (
+          <a
+            href="/admin"
+            className="flex items-center space-x-1.5 bg-canva-purple/30 hover:bg-canva-purple/50 text-canva-teal px-3 py-1.5 rounded-md text-xs font-bold border border-canva-teal/40 transition-colors"
+            title="Open Complete Admin Dashboard"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-canva-teal" />
+            <span className="hidden sm:inline">Admin Panel</span>
+          </a>
+        )}
 
         <button
           onClick={onOpenPresentModal}

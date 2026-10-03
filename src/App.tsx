@@ -28,6 +28,7 @@ import { FeedbackModal } from './components/modals/FeedbackModal';
 import { ResizeModal } from './components/modals/ResizeModal';
 import { PresentModal } from './components/modals/PresentModal';
 import { NewPageRatioModal } from './components/modals/NewPageRatioModal';
+import { AdminDiagramsModal } from './components/modals/AdminDiagramsModal';
 import { LoginPage } from './components/auth/LoginPage';
 import { LandingPage } from './components/landing/LandingPage';
 import { Dashboard } from './components/dashboard/Dashboard';
@@ -51,6 +52,14 @@ export function App({ initialView }: AppProps = {}) {
     fetchCurrentUserApi().then((user) => {
       if (user) {
         setCurrentUser(user);
+        if (
+          user.role === 'admin' ||
+          user.username?.toLowerCase() === 'admin@2005' ||
+          user.email?.toLowerCase() === 'admin@2005.com'
+        ) {
+          window.location.href = '/admin';
+          return;
+        }
         setView((prev) => (prev === 'landing' || prev === 'auth' ? 'dashboard' : prev));
       }
     });
@@ -127,6 +136,7 @@ export function App({ initialView }: AppProps = {}) {
   const [isResizeOpen, setIsResizeOpen] = useState(false);
   const [isPresentOpen, setIsPresentOpen] = useState(false);
   const [isAddPageRatioOpen, setIsAddPageRatioOpen] = useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
 
   // Auto-Save active project state helper using refs to prevent stale data
   const saveCurrentProjectToStorage = useCallback((updatedPages?: CanvasPage[]) => {
@@ -403,7 +413,15 @@ export function App({ initialView }: AppProps = {}) {
 
   const handleLoginSuccess = (user: UserProfile) => {
     setCurrentUser(user);
-    setView('dashboard');
+    if (
+      user.role === 'admin' ||
+      user.username?.toLowerCase() === 'admin@2005' ||
+      user.email?.toLowerCase() === 'admin@2005.com'
+    ) {
+      window.location.href = '/admin';
+    } else {
+      setView('dashboard');
+    }
   };
 
   const handleOpenProject = (projectId: string) => {
@@ -780,6 +798,7 @@ export function App({ initialView }: AppProps = {}) {
         canRedo={canRedo}
         onOpenExportModal={() => setIsExportOpen(true)}
         onOpenPresentModal={() => setIsPresentOpen(true)}
+        onOpenAdminModal={() => setIsAdminModalOpen(true)}
         onToggleWatermark={() => canvas && toggleWatermark(canvas)}
         onSaveJson={handleSaveJson}
         onLoadJson={handleLoadJson}
@@ -888,6 +907,11 @@ export function App({ initialView }: AppProps = {}) {
         canvas={canvas}
         pages={pages}
         currentPageId={currentPageId}
+      />
+
+      <AdminDiagramsModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
       />
     </div>
   );

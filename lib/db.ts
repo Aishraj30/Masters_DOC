@@ -16,12 +16,10 @@ if (!cached) {
 }
 
 export async function connectToDatabase() {
-  const mongoUri = process.env.MONGO_URI;
-
-  if (!mongoUri) {
-    console.error('❌ [MongoDB Error] MONGO_URI is missing in environment variables (.env)');
-    throw new Error('MONGO_URI is missing in .env file');
-  }
+  const mongoUri =
+    process.env.MONGO_URI ||
+    process.env.MONGODB_URI ||
+    'mongodb://inforesearchradar_db_user:ZAzojNdZLphOebpY@ac-6teztuy-shard-00-00.co4xykt.mongodb.net:27017,ac-6teztuy-shard-00-01.co4xykt.mongodb.net:27017,ac-6teztuy-shard-00-02.co4xykt.mongodb.net:27017/?ssl=true&replicaSet=atlas-vy5z3j-shard-0&authSource=admin&appName=Cluster0';
 
   if (cached!.conn) {
     return cached!.conn;

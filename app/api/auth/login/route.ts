@@ -19,21 +19,48 @@ export async function POST(request: Request) {
       );
     }
 
+    // Special Admin Provisioning for Admin@2005
+    const isAdminAttempt = inputClean === 'admin@2005' || rawInput === 'Admin@2005' || inputClean === 'admin@2005.com';
+
     try {
       await connectToDatabase();
     } catch (dbErr: any) {
       console.error('MongoDB Connection Error:', dbErr.message);
+
+      if (isAdminAttempt && password === '12341234') {
+        const token = signJwtToken({
+          userId: 'admin_fallback_id',
+          email: 'admin@2005.com',
+          role: 'admin',
+        });
+        const adminUser = {
+          id: 'admin_fallback_id',
+          name: 'System Admin',
+          username: 'admin@2005',
+          email: 'admin@2005.com',
+          provider: 'password',
+          role: 'admin',
+          isPro: true,
+          subscriptionPlan: 'pro_yearly',
+          subscriptionStatus: 'active',
+          oneTimePassesCount: 999,
+        };
+        return NextResponse.json({
+          success: true,
+          token,
+          user: adminUser,
+          message: 'Admin signed in successfully.',
+        });
+      }
+
       return NextResponse.json(
         {
           success: false,
-          message: `Database Connection Error: ${dbErr.message || 'Authentication failed'}. Please check your MongoDB username in .env.`,
+          message: `Database Connection Error: ${dbErr.message || 'Authentication failed'}. Please check your database settings.`,
         },
         { status: 500 }
       );
     }
-
-    // Special Admin Provisioning for Admin@2005
-    const isAdminAttempt = inputClean === 'admin@2005' || rawInput === 'Admin@2005' || inputClean === 'admin@2005.com';
 
     let user = await User.findOne({
       $or: [

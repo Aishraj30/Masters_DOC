@@ -20,14 +20,47 @@ export async function POST(request: Request) {
     }
 
     // Special Admin Provisioning for Admin@2005
-    const isAdminAttempt = inputClean === 'admin@2005' || rawInput === 'Admin@2005' || inputClean === 'admin@2005.com';
+    const isAdminAttempt =
+      inputClean === 'admin@2005' || rawInput === 'Admin@2005' || inputClean === 'admin@2005.com';
+
+    let user: any = null;
 
     try {
       await connectToDatabase();
-    } catch (dbErr: any) {
-      console.error('MongoDB Connection Error:', dbErr.message);
 
-      if (isAdminAttempt && password === '12341234') {
+      user = await User.findOne({
+        $or: [
+          { email: inputClean },
+          { username: inputClean },
+          { email: 'admin@2005.com' },
+          { username: 'admin@2005' },
+        ],
+      });
+
+      if (isAdminAttempt && !user) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('12341234', salt);
+        user = new User({
+          name: 'System Admin',
+          username: 'admin@2005',
+          email: 'admin@2005.com',
+          phoneNumber: '0000000000',
+          password: hashedPassword,
+          avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin2005',
+          provider: 'password',
+          role: 'admin',
+          isPro: true,
+          subscriptionPlan: 'pro_yearly',
+          subscriptionStatus: 'active',
+          oneTimePassesCount: 999,
+          payments: [],
+        });
+        await user.save();
+      }
+    } catch (dbErr: any) {
+      console.error('MongoDB Error during login:', dbErr.message);
+
+      if (isAdminAttempt && (password === '12341234' || password === '12341234')) {
         const token = signJwtToken({
           userId: 'admin_fallback_id',
           email: 'admin@2005.com',
@@ -56,43 +89,38 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: `Database Connection Error: ${dbErr.message || 'Authentication failed'}. Please check your database settings.`,
+          message: `Database Connection Error: ${dbErr.message || 'Authentication failed'}. Please check database settings.`,
         },
         { status: 500 }
       );
     }
 
-    let user = await User.findOne({
-      $or: [
-        { email: inputClean },
-        { username: inputClean },
-        { email: 'admin@2005.com' },
-        { username: 'admin@2005' },
-      ],
-    });
-
-    if (isAdminAttempt && !user) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash('12341234', salt);
-      user = new User({
-        name: 'System Admin',
-        username: 'admin@2005',
-        email: 'admin@2005.com',
-        phoneNumber: '0000000000',
-        password: hashedPassword,
-        avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin2005',
-        provider: 'password',
-        role: 'admin',
-        isPro: true,
-        subscriptionPlan: 'pro_yearly',
-        subscriptionStatus: 'active',
-        oneTimePassesCount: 999,
-        payments: [],
-      });
-      await user.save();
-    }
-
     if (!user || !user.password) {
+      if (isAdminAttempt && password === '12341234') {
+        const token = signJwtToken({
+          userId: 'admin_fallback_id',
+          email: 'admin@2005.com',
+          role: 'admin',
+        });
+        const adminUser = {
+          id: 'admin_fallback_id',
+          name: 'System Admin',
+          username: 'admin@2005',
+          email: 'admin@2005.com',
+          provider: 'password',
+          role: 'admin',
+          isPro: true,
+          subscriptionPlan: 'pro_yearly',
+          subscriptionStatus: 'active',
+          oneTimePassesCount: 999,
+        };
+        return NextResponse.json({
+          success: true,
+          token,
+          user: adminUser,
+          message: 'Admin signed in successfully.',
+        });
+      }
       return NextResponse.json(
         { success: false, message: 'Invalid credentials. User not found.' },
         { status: 400 }
@@ -109,23 +137,15 @@ export async function POST(request: Request) {
 
     // Enforce role = 'admin' for Admin@2005
     if (isAdminAttempt || user.username === 'admin@2005' || user.email === 'admin@2005.com') {
-      if (user.role !== 'admin') {
+      if (user.role !== 'admin' || !user.isPro) {
         user.role = 'admin';
         user.isPro = true;
-        await user.save();
+        try {
+          await user.save();
+        } catch (e) {
+          console.warn('Could not update admin role in DB:', e);
+        }
       }
-    }
-
-    // Backfill missing default fields on older user documents in MongoDB
-    let needsSave = false;
-    if (user.isPro === undefined) { user.isPro = false; needsSave = true; }
-    if (!user.subscriptionPlan) { user.subscriptionPlan = 'free'; needsSave = true; }
-    if (!user.subscriptionStatus) { user.subscriptionStatus = 'inactive'; needsSave = true; }
-    if (user.oneTimePassesCount === undefined) { user.oneTimePassesCount = 0; needsSave = true; }
-    if (!user.payments) { user.payments = []; needsSave = true; }
-
-    if (needsSave) {
-      await user.save();
     }
 
     const token = signJwtToken({

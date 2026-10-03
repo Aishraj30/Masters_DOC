@@ -21,14 +21,20 @@ export async function connectToDatabase() {
     process.env.MONGODB_URI ||
     'mongodb://inforesearchradar_db_user:ZAzojNdZLphOebpY@ac-6teztuy-shard-00-00.co4xykt.mongodb.net:27017,ac-6teztuy-shard-00-01.co4xykt.mongodb.net:27017,ac-6teztuy-shard-00-02.co4xykt.mongodb.net:27017/?ssl=true&replicaSet=atlas-vy5z3j-shard-0&authSource=admin&appName=Cluster0';
 
-  if (cached!.conn) {
+  if (cached!.conn && mongoose.connection.readyState === 1) {
     return cached!.conn;
+  }
+
+  if (mongoose.connection.readyState !== 1) {
+    cached!.conn = null;
+    cached!.promise = null;
   }
 
   if (!cached!.promise) {
     console.log('🔄 [MongoDB] Initializing database connection...');
     cached!.promise = mongoose
       .connect(mongoUri, {
+        bufferCommands: false,
         serverSelectionTimeoutMS: 3000,
         connectTimeoutMS: 3000,
         tls: true,
@@ -41,6 +47,7 @@ export async function connectToDatabase() {
       .catch((err) => {
         console.error('❌ [MongoDB Connection Error]:', err.message);
         cached!.promise = null;
+        cached!.conn = null;
         throw err;
       });
   }
@@ -49,6 +56,7 @@ export async function connectToDatabase() {
     cached!.conn = await cached!.promise;
   } catch (e) {
     cached!.promise = null;
+    cached!.conn = null;
     throw e;
   }
 

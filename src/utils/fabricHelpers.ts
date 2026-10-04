@@ -1028,16 +1028,19 @@ export const addLucideIconToCanvas = (
 ) => {
   if (!canvas || !IconComponent) return;
 
-  try {
-    const ReactDOMServer = require('react-dom/server');
-    const svgString = ReactDOMServer.renderToStaticMarkup(
-      React.createElement(IconComponent, { color: color || '#000000', size: 48, strokeWidth: 2 })
-    );
+  const strokeColor = color && color !== '#000000' ? color : '#00c4cc';
 
+  const processSvgString = (svgString: string) => {
+    if (!svgString) return;
     fabric.loadSVGFromString(svgString, (objects, options) => {
       if (!objects || objects.length === 0) return;
       objects.forEach((obj) => {
         obj.set('strokeUniform', true);
+        if (strokeColor && strokeColor !== '#000000') {
+          if (obj.stroke && obj.stroke !== 'none' && obj.stroke !== 'transparent') {
+            obj.set('stroke', strokeColor);
+          }
+        }
       });
       const group = fabric.util.groupSVGElements(objects, options);
       const center = canvas.getCenter();
@@ -1056,8 +1059,56 @@ export const addLucideIconToCanvas = (
       canvas.setActiveObject(group);
       canvas.requestRenderAll();
     });
-  } catch (err) {
-    console.error('Failed to add Lucide icon to canvas:', err);
+  };
+
+  // 1. Try Server-side renderToStaticMarkup if available
+  try {
+    const ReactDOMServer = require('react-dom/server');
+    if (ReactDOMServer && typeof ReactDOMServer.renderToStaticMarkup === 'function') {
+      const staticSvg = ReactDOMServer.renderToStaticMarkup(
+        React.createElement(IconComponent, { color: strokeColor, size: 48, strokeWidth: 2 })
+      );
+      if (staticSvg) {
+        processSvgString(staticSvg);
+        return;
+      }
+    }
+  } catch (e) {
+    // Fall back to client-side DOM rendering
+  }
+
+  // 2. Client-side DOM fallback for Next.js browser runtime
+  if (typeof document !== 'undefined') {
+    try {
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.top = '-9999px';
+      container.style.left = '-9999px';
+      container.style.opacity = '0';
+      container.style.pointerEvents = 'none';
+      document.body.appendChild(container);
+
+      const { createRoot } = require('react-dom/client');
+      const root = createRoot(container);
+
+      root.render(
+        React.createElement(IconComponent, { color: strokeColor, size: 48, strokeWidth: 2 })
+      );
+
+      setTimeout(() => {
+        const svgEl = container.querySelector('svg');
+        const svgString = svgEl ? svgEl.outerHTML : '';
+        try {
+          root.unmount();
+        } catch (uErr) {}
+        container.remove();
+        if (svgString) {
+          processSvgString(svgString);
+        }
+      }, 10);
+    } catch (domErr) {
+      console.error('DOM render fallback error:', domErr);
+    }
   }
 };
 

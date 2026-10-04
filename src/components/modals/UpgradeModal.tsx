@@ -73,20 +73,20 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
               <Crown className="w-4 h-4 fill-black text-black" />
             </div>
             <div>
-              <h2 className="font-bold text-sm text-white flex items-center gap-1.5">
+              <h2 className="font-bold text-sm text-canva-text flex items-center gap-1.5">
                 <span>Unlock Clean HD Download</span>
                 <span className="text-[10px] bg-amber-400/20 text-amber-400 font-bold px-2 py-0.5 rounded-full border border-amber-400/30">
                   No Watermark
                 </span>
               </h2>
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-canva-text-muted">
                 Remove "RESEARCH RADAR" watermark & export in full resolution via Razorpay
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-canva-hover text-gray-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-lg hover:bg-canva-hover text-canva-text-muted hover:text-canva-text transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -115,24 +115,24 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             </span>
 
             <div className="flex items-start space-x-3">
-              <div className={`p-2.5 rounded-xl ${selectedOption === 'pro' ? 'bg-canva-teal text-black' : 'bg-canva-panel text-gray-400'}`}>
+              <div className={`p-2.5 rounded-xl ${selectedOption === 'pro' ? 'bg-canva-teal text-black' : 'bg-canva-panel text-canva-text-muted'}`}>
                 <Crown className="w-5 h-5" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-white flex items-center gap-1.5">
+                  <h3 className="font-bold text-sm text-canva-text flex items-center gap-1.5">
                     Pro Unlimited Plan
                   </h3>
                   <div className="text-right">
                     <span className="font-extrabold text-base text-canva-teal">₹499</span>
-                    <span className="text-[11px] text-gray-400">/mo</span>
+                    <span className="text-[11px] text-canva-text-muted">/mo</span>
                     <span className="block text-[10px] text-emerald-400 font-mono">+ 18% GST (₹89.82)</span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-300 mt-1">
+                <p className="text-xs text-canva-text-muted mt-1">
                   Unlimited clean HD exports, PDF/SVG vector files & all premium AI tools.
                 </p>
-                <div className="mt-2 flex items-center space-x-4 text-[11px] text-gray-400 font-medium">
+                <div className="mt-2 flex items-center space-x-4 text-[11px] text-canva-text-muted font-medium">
                   <span className="flex items-center space-x-1 text-emerald-400">
                     <Check className="w-3.5 h-3.5" /> <span>No Watermark</span>
                   </span>
@@ -154,24 +154,24 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
             }`}
           >
             <div className="flex items-start space-x-3">
-              <div className={`p-2.5 rounded-xl ${selectedOption === 'pass' ? 'bg-amber-400 text-black' : 'bg-canva-panel text-gray-400'}`}>
+              <div className={`p-2.5 rounded-xl ${selectedOption === 'pass' ? 'bg-amber-400 text-black' : 'bg-canva-panel text-canva-text-muted'}`}>
                 <Ticket className="w-5 h-5" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-white">
+                  <h3 className="font-bold text-sm text-canva-text">
                     One-Time Clean Download Pass
                   </h3>
                   <div className="text-right">
                     <span className="font-extrabold text-base text-amber-400">₹99</span>
-                    <span className="text-[11px] text-gray-400"> / single export</span>
+                    <span className="text-[11px] text-canva-text-muted"> / single export</span>
                     <span className="block text-[10px] text-amber-300 font-mono">+ 18% GST (₹17.82)</span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-300 mt-1">
+                <p className="text-xs text-canva-text-muted mt-1">
                   Download this current design cleanly without any watermark once.
                 </p>
-                <div className="mt-2 flex items-center space-x-4 text-[11px] text-gray-400 font-medium">
+                <div className="mt-2 flex items-center space-x-4 text-[11px] text-canva-text-muted font-medium">
                   <span className="flex items-center space-x-1 text-amber-400">
                     <Check className="w-3.5 h-3.5" /> <span>Single Clean Pass</span>
                   </span>
@@ -182,24 +182,24 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
 
           {/* Invoice Price Breakdown Summary */}
           <div className="bg-canva-sidebar p-3.5 rounded-xl border border-canva-border space-y-1.5">
-            <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center justify-between text-xs text-canva-text-muted">
               <span className="flex items-center gap-1.5">
                 <Receipt className="w-3.5 h-3.5 text-canva-teal" />
                 <span>Base Amount ({selectedOption === 'pro' ? 'Pro Monthly' : 'Single Pass'}):</span>
               </span>
-              <span className="font-mono text-white font-semibold">
+              <span className="font-mono text-canva-text font-semibold">
                 {selectedOption === 'pro' ? '₹499.00' : '₹99.00'}
               </span>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center justify-between text-xs text-canva-text-muted">
               <span>GST (18% Goods & Services Tax):</span>
               <span className="font-mono text-amber-400">
                 {selectedOption === 'pro' ? '+ ₹89.82' : '+ ₹17.82'}
               </span>
             </div>
 
-            <div className="pt-2 border-t border-canva-border flex items-center justify-between text-xs font-bold text-white">
+            <div className="pt-2 border-t border-canva-border flex items-center justify-between text-xs font-bold text-canva-text">
               <span>Total Payable Amount:</span>
               <span className="text-sm font-mono text-canva-teal">
                 {selectedOption === 'pro' ? '₹588.82' : '₹116.82'}

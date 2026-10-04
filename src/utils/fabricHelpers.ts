@@ -1032,7 +1032,14 @@ export const addLucideIconToCanvas = (
 
   const processSvgString = (svgString: string) => {
     if (!svgString) return;
-    fabric.loadSVGFromString(svgString, (objects, options) => {
+
+    // Ensure XML Namespace is present on SVG root element for DOMParser & Fabric.js compatibility
+    let validSvg = svgString;
+    if (!validSvg.includes('xmlns=')) {
+      validSvg = validSvg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+
+    fabric.loadSVGFromString(validSvg, (objects, options) => {
       if (!objects || objects.length === 0) return;
       objects.forEach((obj) => {
         obj.set('strokeUniform', true);
@@ -1077,7 +1084,7 @@ export const addLucideIconToCanvas = (
     // Fall back to client-side DOM rendering
   }
 
-  // 2. Client-side DOM fallback for Next.js browser runtime
+  // 2. Client-side DOM fallback with flushSync for Next.js browser runtime
   if (typeof document !== 'undefined') {
     try {
       const container = document.createElement('div');
@@ -1088,24 +1095,33 @@ export const addLucideIconToCanvas = (
       container.style.pointerEvents = 'none';
       document.body.appendChild(container);
 
-      const { createRoot } = require('react-dom/client');
-      const root = createRoot(container);
+      const ReactDOMClient = require('react-dom/client');
+      const ReactDOM = require('react-dom');
+      const root = ReactDOMClient.createRoot(container);
 
-      root.render(
-        React.createElement(IconComponent, { color: strokeColor, size: 48, strokeWidth: 2 })
-      );
+      if (typeof ReactDOM.flushSync === 'function') {
+        ReactDOM.flushSync(() => {
+          root.render(
+            React.createElement(IconComponent, { color: strokeColor, size: 48, strokeWidth: 2 })
+          );
+        });
+      } else {
+        root.render(
+          React.createElement(IconComponent, { color: strokeColor, size: 48, strokeWidth: 2 })
+        );
+      }
 
-      setTimeout(() => {
-        const svgEl = container.querySelector('svg');
-        const svgString = svgEl ? svgEl.outerHTML : '';
-        try {
-          root.unmount();
-        } catch (uErr) {}
-        container.remove();
-        if (svgString) {
-          processSvgString(svgString);
-        }
-      }, 10);
+      const svgEl = container.querySelector('svg');
+      let svgString = svgEl ? svgEl.outerHTML : '';
+
+      try {
+        root.unmount();
+      } catch (uErr) {}
+      container.remove();
+
+      if (svgString) {
+        processSvgString(svgString);
+      }
     } catch (domErr) {
       console.error('DOM render fallback error:', domErr);
     }
